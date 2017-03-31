@@ -117,7 +117,7 @@ int16_t PID_INT64::step(int16_t sp, int16_t fb) {
 
   if (_d && hz) {
     // int17 - (int16 - int16) = int19
-    int32_t deriv = err - (sp - _last_sp);
+    int32_t deriv = (err - _last_err) - (sp - _last_sp);
     _last_sp = sp; 
     _last_err = err; 
 
@@ -152,16 +152,12 @@ int16_t PID_INT64::step(int16_t sp, int16_t fb) {
 
   // Remove the integer scaling factor. 
   // int28 >> 13 = int15
-  int16_t out = _ctl >> (DEC_SHIFT - 1);
-  
-  // Properly round the result. 
-  if (out % 2) {
-    if (out >= 0) 
-      out += 2;
-    else
-      out -= 2;
+  int16_t out = _ctl >> DEC_SHIFT;
+
+  // Fair rounding.
+  if (_ctl & (int64_t(0x1) << (DEC_SHIFT - 1))) {
+    out++;
   }
-  out = out >> 1;
 
   return out;
 }
