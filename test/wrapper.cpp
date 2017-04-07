@@ -20,30 +20,30 @@ configure(PyObject *self, PyObject *args) {
 
 static PyObject *
 step(PyObject *self, PyObject *args) {
-  int16_t sp; 
-  int16_t err;
+  int sp; 
+  int err;
   if (!PyArg_ParseTuple(args, "ii", &sp, &err))
     return NULL;
   
   return PyLong_FromLong(pid.step(sp, err));
 }
 
-static PyMethodDef HarnessMethods[] = {
+static PyMethodDef PIDMethods[] = {
     {"configure",  configure, METH_VARARGS, "Configure the PID."},
     {"step",  step, METH_VARARGS, "Run a PID step."},
     {NULL, NULL, 0, NULL}
 };
 
-static struct PyModuleDef harnessmod = {
+static struct PyModuleDef pid_module = {
    PyModuleDef_HEAD_INIT,
-   "harness",   /* name of module */
+   "PID_INT64",   /* name of module */
    NULL, /* module documentation, may be NULL */
    -1,       /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
-   HarnessMethods
+   PIDMethods
 };
 
 PyMODINIT_FUNC
-PyInit_harness(void)
+PyInit_PID_INT64(void)
 {
-  return PyModule_Create(&harnessmod);
+  return PyModule_Create(&pid_module);
 }

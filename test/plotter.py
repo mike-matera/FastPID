@@ -23,13 +23,14 @@ setup (name = 'Harness',
 import harness
 
 def main() :
-    p = 0.01
-    i = 0.0001
-    d = 0.001
-    db = 0.01
+    p = 0
+    i = 1
+    d = 1
+    db = 0
 
-    sp = 100
-    steps = 2000
+    steps = 100
+    sp = numpy.zeros(steps, dtype=int)
+    sp[1] = 1
 
     if not harness.configure(p, i, d, db, 16, True) :
         print ("There was a configuration error.")
@@ -38,8 +39,9 @@ def main() :
     out = 0;
     data = numpy.array([])
     for step in range(0, steps) :
-        data = numpy.append(data, [sp, out])
-        out = harness.step(sp, out)
+        sp_num = sp[step]
+        data = numpy.append(data, [sp_num, out])
+        out = harness.step(sp_num, out)
 
     plt.plot(data[0:-1:2], '', data[1:-1:2], '')            
     plt.show()

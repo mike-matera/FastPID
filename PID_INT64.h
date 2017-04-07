@@ -3,17 +3,8 @@
 
 #include <stdint.h>
 
-#define INT31_MAX    (INT32_MAX >> 1)
-#define INT31_MIN    (INT32_MIN >> 1)
-
 #define INTEG_MAX    (INT32_MAX >> 1)
 #define INTEG_MIN    (INT32_MIN >> 1)
-
-#define DERIV_MAX    (int64_t(INT16_MAX) / HZ_MAX)
-#define DERIV_MIN    (int64_t(INT16_MIN) / HZ_MAX)
-
-#define OUT_MAX      (INT64_MAX >> 1)
-#define OUT_MIN      (INT64_MIN >> 1)
 
 #define DEC_SHIFT    14
 #define PARAM_MAX    (UINT16_MAX >> DEC_SHIFT) 
