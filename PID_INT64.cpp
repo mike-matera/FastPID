@@ -71,7 +71,7 @@ uint16_t PID_INT64::floatToParam(float in) {
 int16_t PID_INT64::step(int16_t sp, int16_t fb) {
 
   // Calculate delta T
-  // millis(): Frequencies less than 1Hz are effectively zero. 
+  // millis(): Frequencies less than 1Hz become 1Hz. 
   //   max freqency 1 kHz (XXX: is this too low?)
   uint32_t now = __millis();
   uint32_t hz = 0;
@@ -88,6 +88,8 @@ int16_t PID_INT64::step(int16_t sp, int16_t fb) {
     else {
       hz = uint32_t(1000) / (now - _last_run); 
     }
+    if (hz == 0) 
+      hz = 1;
   }
 
   _last_run = now;
@@ -155,9 +157,12 @@ int16_t PID_INT64::step(int16_t sp, int16_t fb) {
   int16_t out = _ctl >> DEC_SHIFT;
 
   // Fair rounding.
+  //  cout << "rounding: " << double(_ctl) / 16384.0 << " " 
+  //     << out << " ";
   if (_ctl & (int64_t(0x1) << (DEC_SHIFT - 1))) {
     out++;
   }
+  //cout << out << endl; 
 
   return out;
 }

@@ -3,11 +3,18 @@
 import subprocess 
 import matplotlib.pyplot as plt
 import numpy 
+import random 
+import pytest 
+
+random.seed(0)
+turns = 10 
 
 import PID_INT64 as pid
 
-def impulse() :
-    return numpy.array([0,1,0])
+def impulse(steps) :
+    ar = numpy.array([0,1,0])
+    ar.resize((steps,))
+    return ar
 
 def run(sp) : 
     out = 0
@@ -18,30 +25,39 @@ def run(sp) :
 
     return data
 
-def main() :
-    p = 0.5
-    i = 0
-    d = 0
-    db = 0.1
+def test_overunity() : 
+    for t in range(turns) : 
+        steps = int(random.uniform(4, 16383))
+        p = random.uniform(1,2)
+        sp = impulse(steps)
+        sp = sp * steps
+        pid.configure(p, 0, 0, 0, 16, True)
+        resp = run(sp)
+        mmax = numpy.amax(resp)
+        #plt.plot(sp, '', resp, '')            
+        #plt.show()
+        assert abs(mmax - p * steps) <= (steps / 100), "Peak is not within 1% of the setpoint"
+        assert abs(resp[2] - p * steps) <= (steps / 100), "Peak is not in resp[2]"
+        #assert resp[steps-1] == 0, "The system did not converge after {} steps".format(steps)
+        
+def test_underunity() : 
+    for t in range(turns) :
+        steps = int(random.uniform(4, 32767))
+        p = random.uniform(0,1)
+        sp = impulse(steps)
+        sp = sp * steps
+        pid.configure(p, 0, 0, 0, 16, True)
+        resp = run(sp)
+        mmax = numpy.amax(resp)
+        assert abs(mmax - p * steps) <= (steps / 100), "Peak is not within 1% of the setpoint"
+        assert abs(resp[2] - p * steps) <= (steps / 100), "Peak is not in resp[2]"
+        assert resp[steps-1] == 0, "The system did not converge after {} steps".format(steps)
 
-    steps = 100
-    sp = impulse() * 1000
-    sp.resize((steps,)) 
-
-    if not pid.configure(p, i, d, db, 16, True) :
-        print ("There was a configuration error.")
-        exit(-1)
-
-    out = run(sp)
-    print (out)
-
-    if numpy.array_equal(sp, out) : 
-        print ("Pass!")
-    else:
-        print ("Fail!")
-
-    plt.plot(sp, '', out, '')            
-    plt.show()
- 
-if __name__ == "__main__" : 
-    main()
+#def main() :
+#    test_underunity()
+#
+#    plt.plot(sp, '', out, '')            
+#    plt.show()
+# 
+#if __name__ == "__main__" : 
+#    main()

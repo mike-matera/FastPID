@@ -11,7 +11,7 @@
 #define PARAM_MULT   (UINT16_MAX >> (16 - DEC_SHIFT)) 
 
 /*
-  A fixed point PID controller with a 32-bit internal calculation pipeline.
+  A fixed point PID controller with a 64-bit internal calculation pipeline.
 */
 class PID_INT64 {
 
