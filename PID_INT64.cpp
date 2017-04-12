@@ -119,7 +119,7 @@ int16_t PID_INT64::step(int16_t sp, int16_t fb) {
 
   if (_d && hz) {
     // int17 - (int16 - int16) = int19
-    int32_t deriv = (err - _last_err) - (sp - _last_sp);
+    int32_t deriv = (sp - _last_sp) - (err - _last_err);
     _last_sp = sp; 
     _last_err = err; 
 
