@@ -4,13 +4,17 @@ import numpy
 import matplotlib.pyplot as plt
 import PID_INT64
 import random 
+import datetime 
 
 class refpid : 
     def __init__(self, p, i, d, db) : 
         self.kp = p
         self.ki = i
         self.kd = d 
-        self.dband = db
+        if i != 0 and d != 0 :
+            self.dband = db
+        else:
+            self.dband = 0
         self.out = 0 
         self.sum = 0
         self.lasterr = 0
@@ -39,14 +43,14 @@ class refpid :
 
         return round(self.out)
 
-
 def impulse(steps) :
     ar = numpy.array([0,1,0])
     ar.resize((steps,))
     return ar
 
 def do_test(p, i, d, db, sp) :
-    PID_INT64.configure(p, i, d, db, 16, True) 
+    if not PID_INT64.configure(p, i, d, db, 16, True) :
+        print ("Configuration ERROR!")    
     ref = refpid(p, i, d, db) 
     refdata = numpy.array([], dtype=int)
     dutdata = numpy.array([], dtype=int)
@@ -61,20 +65,18 @@ def do_test(p, i, d, db, sp) :
         dutout = PID_INT64.step(point, dutout)
 
     return [refdata, dutdata]
-
-def find_diverg(ref, dut) :
-    err = numpy.abs(numpy.subtract(refdata, dutdata))
     
 def report_fail(p, i, d, db, sp, ref, test, err, magerr) : 
     print ("WARNING p={} i={} d={} db={} error: {}".format(p,i,d,db,magerr))
     cum = numpy.cumsum(err)
     plotname = "warning-p{}-i{}-d{}-db{}.png".format(p,i,d,db)
-    plt.plot(sp, '', ref, '--', test, '', cum, '*')
+    plt.plot(sp, '', ref, '--', test, '', err, '*')
     plt.savefig(plotname)
+    #plt.show()
     plt.close()
     
 def reftest() :
-    #seed = datetime.time()
+    seed = datetime.time()
     seed = 0
     random.seed(seed)
     print ("Random seed:", seed)
@@ -87,11 +89,11 @@ def reftest() :
 
     for i in range (turns) : 
 
-        p = round(random.uniform(0, 1), 3)
+        p = round(random.uniform(0, 2), 3)
         i = round(random.uniform(0, p), 3)
         d = round(random.uniform(0, i), 3)
-        #db = round(random.uniform(0, 32))
-        db = 0
+        db = round(random.uniform(0, 32))
+
         steps = 100
         sp = impulse(steps) * round(random.uniform(-1,1) * 32767)
 
@@ -102,7 +104,7 @@ def reftest() :
         if swing == 0: 
             continue
 
-        magerr = numpy.sum(err) / swing
+        magerr = numpy.sum(err) / swing**2
 
         if magerr > worst : 
             worst = magerr 
@@ -111,7 +113,7 @@ def reftest() :
             best = magerr 
 
         total += 1
-        if magerr > 0.1 : 
+        if magerr > 0.001 : 
             fails += 1
             report_fail(p, i, d, db, sp, ref, test, err, magerr)
 

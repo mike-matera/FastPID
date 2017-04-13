@@ -27,7 +27,7 @@ void PID_INT64::clear() {
   _cfg_err = false;
 }
 
-bool PID_INT64::configure(float kp, float ki, float kd, float db, int bits, bool sign) {
+bool PID_INT64::configure(float kp, float ki, float kd, uint16_t db, int bits, bool sign) {
   clear();
   
   // Set parameters
@@ -42,8 +42,7 @@ bool PID_INT64::configure(float kp, float ki, float kd, float db, int bits, bool
     _db = 0; 
   }
   else {
-    // XXX: FIXME: do bounds checking
-    _db = db * PARAM_MULT;
+    _db = uint32_t(db) * PARAM_MULT;
   }
 
   // Set output bits
@@ -52,11 +51,11 @@ bool PID_INT64::configure(float kp, float ki, float kd, float db, int bits, bool
   }
   else {
     if (sign) {
-      _outmax = (INT16_MAX << DEC_SHIFT) >> (16 - bits); 
-      _outmin = (INT16_MIN << DEC_SHIFT) >> (16 - bits);  
+      _outmax = ((0x1ULL << (bits - 1)) - 1) * PARAM_MULT;
+      _outmin = -((0x1ULL << (bits - 1))) * PARAM_MULT;
     }
     else {
-      _outmax = (UINT16_MAX << DEC_SHIFT) >> (16 - bits); 
+      _outmax = ((0x1ULL << bits) - 1) * PARAM_MULT;
       _outmin = 0;
     }
   }
@@ -64,12 +63,12 @@ bool PID_INT64::configure(float kp, float ki, float kd, float db, int bits, bool
   return !_cfg_err;
 }
 
-uint16_t PID_INT64::floatToParam(float in) {
+uint32_t PID_INT64::floatToParam(float in) {
   if (in > PARAM_MAX || in < 0) {
     _cfg_err = true;
     return 0;
   }
-  return int16_t(in * PARAM_MULT);
+  return in * PARAM_MULT;
 }
 
 int16_t PID_INT64::step(int16_t sp, int16_t fb) {
@@ -103,7 +102,7 @@ int16_t PID_INT64::step(int16_t sp, int16_t fb) {
   int64_t P = 0, I = 0, D = 0;
 
   if (_p) {
-    // uint16 * int16 = int32
+    // uint23 * int16 = int39
     P = int64_t(_p) * int64_t(err);
   }
 
@@ -117,7 +116,7 @@ int16_t PID_INT64::step(int16_t sp, int16_t fb) {
     else if (_sum < INTEG_MIN)
       _sum = INTEG_MIN;
 
-    // uint16 * int31 = int47
+    // uint23 * int31 = int54
     I = int64_t(_i) * int64_t(_sum);
   }
 
@@ -127,15 +126,15 @@ int16_t PID_INT64::step(int16_t sp, int16_t fb) {
     _last_sp = sp; 
     _last_err = err; 
 
-    // uint16 * int19 * uint16 = int51
+    // uint23 * int19 * uint16 = int58
     D = int64_t(_d) * int64_t(deriv) * int64_t(hz);
   }
 
-  // int28 (ctl) + int32 (P) + int47 (I) + int51 (D) = int54
+  // int39 (P) + int54 (I) + int58 (D) = int61
   int64_t diff = P + I + D;
 
   // Apply the deadband. 
-  if (_db) {
+  if (_db && diff != 0) {
     if (diff < 0) {
       if (-diff < _db) {
 	diff = 0;
@@ -148,6 +147,7 @@ int16_t PID_INT64::step(int16_t sp, int16_t fb) {
     }
   }
 
+  // int62 (ctl) + int61 = int63
   _ctl += diff;
 
   // Make the output saturate
@@ -157,16 +157,12 @@ int16_t PID_INT64::step(int16_t sp, int16_t fb) {
     _ctl = _outmin;
 
   // Remove the integer scaling factor. 
-  // int28 >> 13 = int15
-  int16_t out = _ctl >> DEC_SHIFT;
+  int16_t out = _ctl >> PARAM_SHIFT;
 
   // Fair rounding.
-  //  cout << "rounding: " << double(_ctl) / 16384.0 << " " 
-  //     << out << " ";
-  if (_ctl & (int64_t(0x1) << (DEC_SHIFT - 1))) {
+  if (_ctl & (0x1ULL << (PARAM_SHIFT - 1))) {
     out++;
   }
-  //cout << out << endl; 
 
   return out;
 }

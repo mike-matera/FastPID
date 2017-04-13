@@ -9,6 +9,7 @@ test: $(EGG)
 	$(PYTHON) reference.py
 
 $(EGG): builder.py wrapper.cpp ../PID_INT64.cpp ../PID_INT64.h
+	-rm *.so
 	$(PYTHON) builder.py 
 
 clean:
