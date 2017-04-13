@@ -16,16 +16,21 @@
 class PID_INT64 {
 
 public:
-  PID_INT64() : _p(0), _i(0), _d(0), _db(0), 
-		_last_sp(0), _last_out(0),
-		_sum(0), _last_err(0), _last_run(0), 
-		_ctl(0),_outmax(INT16_MAX << 12), _outmin(INT16_MIN << 12),
-		_cfg_err(false)
+  PID_INT64() 
+    : _p(0), _i(0), _d(0), _db(0), 
+      _last_sp(0), _last_out(0),
+      _sum(0), _last_err(0), _last_run(0), 
+      _ctl(0),_outmax(INT16_MAX << 12), _outmin(INT16_MIN << 12),
+      _cfg_err(false)
   { 
   }
 
   PID_INT64(float kp, float ki, float kd, float db=0.0, int bits=16, bool sign=false)
-  {
+    : _p(0), _i(0), _d(0), _db(0), 
+      _last_sp(0), _last_out(0),
+      _sum(0), _last_err(0), _last_run(0), 
+      _ctl(0),_outmax(INT16_MAX << 12), _outmin(INT16_MIN << 12),
+      _cfg_err(false)  {
     configure(kp, ki, kd, db, bits, sign);
   }
 
@@ -45,10 +50,10 @@ private:
 
 private:
 
-  uint16_t _p, _i, _d, _db;
+  uint16_t _p, _i, _d;
   int16_t _last_sp, _last_out;
   int32_t _sum, _last_err;
-  uint32_t _last_run; 
+  uint32_t _last_run, _db; 
   int64_t _ctl, _outmax, _outmin;
 
   bool _cfg_err; 

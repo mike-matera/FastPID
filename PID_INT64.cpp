@@ -19,6 +19,9 @@ PID_INT64::~PID_INT64() {
 
 void PID_INT64::clear() {
   _last_sp = 0; 
+  _last_err = 0;
+  _last_out = 0;
+  _last_run = 0;
   _sum = 0; 
   _ctl = 0; 
   _cfg_err = false;
@@ -39,7 +42,8 @@ bool PID_INT64::configure(float kp, float ki, float kd, float db, int bits, bool
     _db = 0; 
   }
   else {
-    _db = floatToParam(db);
+    // XXX: FIXME: do bounds checking
+    _db = db * PARAM_MULT;
   }
 
   // Set output bits
