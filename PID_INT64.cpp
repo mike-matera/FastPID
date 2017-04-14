@@ -25,6 +25,10 @@ void PID_INT64::clear() {
   _last_run = 0;
   _ctl = 0; 
   _cfg_err = false;
+
+#ifndef ARDUINO
+  __timer = 0;
+#endif
 }
 
 bool PID_INT64::configure(float kp, float ki, float kd, uint16_t db, int bits, bool sign) {
@@ -81,7 +85,7 @@ int16_t PID_INT64::step(int16_t sp, int16_t fb) {
   if (_last_run == 0) {
     // Ignore I and D on the first step. They will be 
     // unreliable because no time has really passed.
-    hz = 0; 
+    hz = 0;
   }
   else {
     if (now < _last_run) {
