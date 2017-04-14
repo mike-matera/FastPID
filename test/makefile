@@ -1,5 +1,5 @@
 
-EGG = PID_INT64-1.0.egg-info 
+EGG = FastPID-1.0.egg-info 
 PYTHON = python3
 PYTEST = pytest -v
 
@@ -8,7 +8,7 @@ all: test
 test: $(EGG)
 	$(PYTHON) reference.py
 
-$(EGG): builder.py wrapper.cpp ../PID_INT64.cpp ../PID_INT64.h
+$(EGG): builder.py wrapper.cpp ../FastPID.cpp ../FastPID.h
 	-rm *.so
 	$(PYTHON) builder.py 
 

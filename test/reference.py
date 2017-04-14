@@ -2,11 +2,12 @@
 
 import numpy 
 import matplotlib.pyplot as plt
-import PID_INT64
+import FastPID
 import random 
 import datetime 
 import os 
 import sys
+import time 
 
 class refpid : 
     def __init__(self, p, i, d, db) : 
@@ -81,7 +82,7 @@ class testrun :
 
     def run(self): 
         self.sp = self.impulse(self.steps) * self.mag
-        if not PID_INT64.configure(self.p, self.i, self.d, self.db, 16, True) :
+        if not FastPID.configure(self.p, self.i, self.d, self.db, 16, True) :
             print ("Configuration ERROR!")    
         ref = refpid(self.p, self.i, self.d, self.db) 
         self.refdata = numpy.array([], dtype=int)
@@ -94,7 +95,7 @@ class testrun :
             self.refdata[x,] = refout
             self.dutdata[x,] = dutout
             refout = ref.step(point, refout)
-            dutout = PID_INT64.step(point, dutout)
+            dutout = FastPID.step(point, dutout)
 
         # Record result
         self.err = numpy.subtract(self.refdata, self.dutdata)
@@ -119,11 +120,7 @@ class testrun :
         plt.plot(self.sp, '', self.refdata, '--', self.dutdata, '', self.err, '*')
         plt.show()
 
-def randomtest(seed) :
-    random.seed(seed)
-    print ("Random seed:", seed)
-    turns = 10000
-
+def randomtest(seed, turns) :
     results = numpy.array([])
     results.resize((turns,))
 
@@ -157,6 +154,16 @@ if __name__ == '__main__' :
         test.run()
         test.show()
 
+    elif len(sys.argv) == 3 : 
+        seed = int(sys.argv[1])
+        turns = int(sys.argv[2])
+        random.seed(seed)
+        print ("Random seed:", seed)
+        randomtest(seed, turns)
+
     else:
-        seed = datetime.time()
-        randomtest(seed)
+        seed = int(time.time())
+        turns = 10000
+        random.seed(seed)
+        print ("Random seed:", seed)
+        randomtest(seed, turns)

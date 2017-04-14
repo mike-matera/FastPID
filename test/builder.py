@@ -4,13 +4,13 @@ import distutils.sysconfig
 from distutils.core import setup, Extension
 
 # build the harness. 
-ext = Extension('PID_INT64',
-                     sources = ['wrapper.cpp', '../PID_INT64.cpp'],
+ext = Extension('FastPID',
+                     sources = ['wrapper.cpp', '../FastPID.cpp'],
                      include_dirs = ['../']
 )
 
 # install
-setup (name = 'PID_INT64',
+setup (name = 'FastPID',
        version = '1.0',
        description = 'Test harness for my PID controller',
        ext_modules = [ext],
@@ -18,4 +18,4 @@ setup (name = 'PID_INT64',
 )
 
 # test
-import PID_INT64
+import FastPID

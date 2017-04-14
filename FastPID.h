@@ -1,5 +1,5 @@
-#ifndef PID_INT64_H
-#define PID_INT64_H
+#ifndef FastPID_H
+#define FastPID_H
 
 #include <stdint.h>
 
@@ -14,20 +14,20 @@
 /*
   A fixed point PID controller with a 64-bit internal calculation pipeline.
 */
-class PID_INT64 {
+class FastPID {
 
 public:
-  PID_INT64() 
+  FastPID() 
   {
     clear();
   }
 
-  PID_INT64(float kp, float ki, float kd, uint16_t db=0, int bits=16, bool sign=false)
+  FastPID(float kp, float ki, float kd, uint16_t db=0, int bits=16, bool sign=false)
   {
     configure(kp, ki, kd, db, bits, sign);
   }
 
-  ~PID_INT64();
+  ~FastPID();
 
   void clear();
   bool configure(float kp, float ki, float kd, uint16_t db=0, int bits=16, bool sign=false);

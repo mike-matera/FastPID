@@ -1,7 +1,7 @@
 #include <Python.h>
-#include "PID_INT64.h"
+#include "FastPID.h"
 
-PID_INT64 pid; 
+FastPID pid; 
 
 static PyObject *
 configure(PyObject *self, PyObject *args) {
@@ -36,14 +36,14 @@ static PyMethodDef PIDMethods[] = {
 
 static struct PyModuleDef pid_module = {
    PyModuleDef_HEAD_INIT,
-   "PID_INT64",   /* name of module */
+   "FastPID",   /* name of module */
    NULL, /* module documentation, may be NULL */
    -1,       /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
    PIDMethods
 };
 
 PyMODINIT_FUNC
-PyInit_PID_INT64(void)
+PyInit_FastPID(void)
 {
   return PyModule_Create(&pid_module);
 }

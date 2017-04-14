@@ -1,4 +1,4 @@
-#include "PID_INT64.h"
+#include "FastPID.h"
 
 #include <iostream>
 using namespace std; 
@@ -14,10 +14,10 @@ static uint32_t __t() {
 #define __millis() __t()
 #endif
 
-PID_INT64::~PID_INT64() {
+FastPID::~FastPID() {
 }
 
-void PID_INT64::clear() {
+void FastPID::clear() {
   _last_sp = 0; 
   _last_out = 0;
   _sum = 0; 
@@ -31,7 +31,7 @@ void PID_INT64::clear() {
 #endif
 }
 
-bool PID_INT64::configure(float kp, float ki, float kd, uint16_t db, int bits, bool sign) {
+bool FastPID::configure(float kp, float ki, float kd, uint16_t db, int bits, bool sign) {
   clear();
   
   // Set parameters
@@ -67,7 +67,7 @@ bool PID_INT64::configure(float kp, float ki, float kd, uint16_t db, int bits, b
   return !_cfg_err;
 }
 
-uint32_t PID_INT64::floatToParam(float in) {
+uint32_t FastPID::floatToParam(float in) {
   if (in > PARAM_MAX || in < 0) {
     _cfg_err = true;
     return 0;
@@ -75,7 +75,7 @@ uint32_t PID_INT64::floatToParam(float in) {
   return in * PARAM_MULT;
 }
 
-int16_t PID_INT64::step(int16_t sp, int16_t fb) {
+int16_t FastPID::step(int16_t sp, int16_t fb) {
 
   // Calculate delta T
   // millis(): Frequencies less than 1Hz become 1Hz. 
@@ -171,8 +171,7 @@ int16_t PID_INT64::step(int16_t sp, int16_t fb) {
   return out;
 }
 
-
-void PID_INT64::setCfgErr() {
+void FastPID::setCfgErr() {
   _cfg_err = true;
   _p = _i = _d = 0;
 }
