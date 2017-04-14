@@ -8,7 +8,7 @@ all: test
 test: $(EGG)
 	$(PYTHON) reference.py
 
-$(EGG): builder.py wrapper.cpp ../FastPID.cpp ../FastPID.h
+$(EGG): builder.py wrapper.cpp ../src/FastPID.cpp ../src/FastPID.h
 	-rm *.so
 	$(PYTHON) builder.py 
 
