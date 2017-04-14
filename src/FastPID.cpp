@@ -1,17 +1,17 @@
 #include "FastPID.h"
 
-#include <iostream>
 using namespace std; 
 
 #ifdef ARDUINO 
-#define __millis() millis()
+#include <Arduino.h>
 #else 
+#include <iostream>
 static uint32_t __timer = 0; 
 static uint32_t __t() {
   __timer += 1000;
   return __timer;
 }
-#define __millis() __t()
+#define millis() __t()
 #endif
 
 FastPID::~FastPID() {
@@ -80,7 +80,7 @@ int16_t FastPID::step(int16_t sp, int16_t fb) {
   // Calculate delta T
   // millis(): Frequencies less than 1Hz become 1Hz. 
   //   max freqency 1 kHz (XXX: is this too low?)
-  uint32_t now = __millis();
+  uint32_t now = millis();
   uint32_t hz = 0;
   if (_last_run == 0) {
     // Ignore I and D on the first step. They will be 
