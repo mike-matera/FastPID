@@ -13,6 +13,6 @@ $(EGG): builder.py wrapper.cpp ../PID_INT64.cpp ../PID_INT64.h
 	$(PYTHON) builder.py 
 
 clean:
-	-rm -rf *.so *.egg-info *.png build/ __pycache__ .cache
+	-rm -rf *.so *.egg-info *.png build/ __pycache__ .cache plots
 
 .PHONY: clean
