@@ -3,7 +3,7 @@ EGG = FastPID-1.0.egg-info
 PYTHON = python3
 PYTEST = pytest -v
 
-all: test
+all: $(EGG)
 
 test: $(EGG)
 	$(PYTHON) reference.py
