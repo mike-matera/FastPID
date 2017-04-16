@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-#define INTEG_MAX    (INT32_MAX >> 1)
-#define INTEG_MIN    (INT32_MIN >> 1)
+#define INTEG_MAX    (INT64_MAX >> 1)
+#define INTEG_MIN    (INT64_MIN >> 1)
 
 #define PARAM_SHIFT  23
 #define PARAM_BITS   25
@@ -50,7 +50,8 @@ private:
 
   // State
   int16_t _last_sp, _last_out;
-  int32_t _sum, _last_err;
+  int64_t _sum;
+  int32_t _last_err;
   uint32_t _last_run; 
   int64_t _ctl;
   bool _cfg_err; 

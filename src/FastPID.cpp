@@ -111,8 +111,8 @@ int16_t FastPID::step(int16_t sp, int16_t fb) {
   }
 
   if (_i && hz) {
-    // (int16 * uint32) + int31 = int32
-    _sum += int32_t(err) / int32_t(hz); 
+    // int31 + ( int25 *  int17) / int10  = int43
+    _sum += (int64_t(_i) * int32_t(err)) / int32_t(hz); 
 
     // Limit sum to 31-bit signed value so that it saturates, never overflows.
     if (_sum > INTEG_MAX)
@@ -120,8 +120,8 @@ int16_t FastPID::step(int16_t sp, int16_t fb) {
     else if (_sum < INTEG_MIN)
       _sum = INTEG_MIN;
 
-    // uint23 * int31 = int54
-    I = int64_t(_i) * int64_t(_sum);
+    // int43
+    I = int64_t(_sum);
   }
 
   if (_d && hz) {
@@ -134,7 +134,7 @@ int16_t FastPID::step(int16_t sp, int16_t fb) {
     D = int64_t(_d) * int64_t(deriv) * int64_t(hz);
   }
 
-  // int39 (P) + int54 (I) + int58 (D) = int61
+  // int39 (P) + int43 (I) + int58 (D) = int61
   int64_t diff = P + I + D;
 
   // Apply the deadband. 
