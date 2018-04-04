@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 
 import numpy 
+import scipy 
 import matplotlib.pyplot as plt
 import FastPID
 import random 
@@ -8,6 +9,7 @@ import datetime
 import os 
 import sys
 import time 
+import math
 
 class refpid : 
     def __init__(self, p, i, d, db) : 
@@ -62,7 +64,7 @@ class testrun :
         self.steps = st
     
     def random(self) : 
-        self.p = round(random.uniform(0, 2), 3)
+        self.p = round(random.uniform(0, 1), 3)
         self.i = round(random.uniform(0, self.p), 3)
         self.d = round(random.uniform(0, self.i), 3)
         self.db = round(random.uniform(0, 32))
@@ -98,29 +100,25 @@ class testrun :
             dutout = FastPID.step(point, dutout)
 
         # Record result
-        self.err = numpy.subtract(self.refdata, self.dutdata)
-        swing = numpy.sum(numpy.abs(self.refdata))
-        if swing == 0: 
-            self.magerr = 0
-        else:
-            self.magerr = numpy.sum(numpy.square(self.err)) / swing**2
-
-        return self.magerr
+        errf = numpy.square(numpy.subtract(self.refdata, self.dutdata))
+        self.err = numpy.cumsum(errf) / numpy.arange(1, self.dutdata.size+1, dtype=float)
+        self.chi2 = numpy.sum(errf) / self.dutdata.size
+        return self.chi2
     
     def save(self) : 
         if not os.path.isdir('plots') :
             os.mkdir('plots')
         plotname = "plots/plot-p{}-i{}-d{}-db{}-mag{}-steps{}.png".format(self.p, self.i, self.d, self.db, self.mag, self.steps)
-        print ("Saving plot:", plotname)
-        plt.plot(self.sp, '', self.refdata, '--', self.dutdata, '', self.err, '*')
+        print ("saving plot:", plotname)
+        plt.plot(self.sp, '', self.refdata, '--', self.dutdata, '')
         plt.savefig(plotname)
         plt.close()
 
     def show(self):
-        plt.plot(self.sp, '', self.refdata, '--', self.dutdata, '', self.err, '*')
+        plt.plot(self.sp, '', self.refdata, '--', self.dutdata, '', self.err, '-.')
         plt.show()
 
-def randomtest(seed, turns) :
+def randomtest(seed, turns, plot) :
     results = numpy.array([])
     results.resize((turns,))
 
@@ -128,18 +126,25 @@ def randomtest(seed, turns) :
         test = testrun(100)
         test.random()
         err = test.run()
-        if err > 0.0001 : 
+        if plot and err > 200 :
+            print ('OUTLIER: (chi^2 == {}) '.format(err), end='')
             test.save()
         results[test_num,] = err
 
     best = numpy.amin(results)
     worst = numpy.amax(results)
     avg = numpy.average(results)
+    std = numpy.std(results)
     
-    print ("Best: {} Worst: {} Avg: {}".format(best,worst,avg))
-    plt.plot(results, '*')
-    plt.show()
+    print ("Best: {} Worst: {} Avg: {} Std. Dev: {}".format(best,worst,avg,std))
 
+    rmax = math.log(results.max())
+    if rmax < 11 :
+        rmax  = 11
+    lbins = numpy.logspace(0, rmax, 50, base=2)
+    plt.hist(results, bins=lbins)
+    plt.show()
+    
 if __name__ == '__main__' : 
     if len(sys.argv) == 7 :
         p = float(sys.argv[1])
@@ -159,11 +164,13 @@ if __name__ == '__main__' :
         turns = int(sys.argv[2])
         random.seed(seed)
         print ("Random seed:", seed)
-        randomtest(seed, turns)
+        print ("Number of turns:", turns)
+        randomtest(seed, turns, True)
 
     else:
         seed = int(time.time())
-        turns = 10000
+        turns = 100000
         random.seed(seed)
         print ("Random seed:", seed)
-        randomtest(seed, turns)
+        print ("Number of turns:", turns)
+        randomtest(seed, turns, False)
