@@ -1,11 +1,10 @@
 #include "FastPID.h"
 
-using namespace std; 
-
 #ifdef ARDUINO 
 #include <Arduino.h>
 #else 
 #include <iostream>
+using namespace std;
 static uint32_t __timer = 0; 
 static uint32_t __t() {
   __timer += 1000;
