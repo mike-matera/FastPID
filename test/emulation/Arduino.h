@@ -7,3 +7,6 @@ static uint32_t __t() {
   return __timer;
 }
 #define millis() __t()
+
+#define abs(x) ((x)>0?(x):-(x))
+#define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
