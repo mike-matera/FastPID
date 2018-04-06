@@ -14,8 +14,8 @@ configure(PyObject *self, PyObject *args) {
 
   if (!PyArg_ParseTuple(args, "ffffib", &kp, &ki, &kd, &db, &bits, &sign))
     return NULL;
-  
-  return PyBool_FromLong(pid.configure(kp, ki, kd, db, bits, sign));
+
+  return PyBool_FromLong(pid.configure(kp, ki, kd, db, bits, sign, false));
 }
 
 static PyObject *

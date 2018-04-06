@@ -1,17 +1,6 @@
 #include "FastPID.h"
 
-#ifdef ARDUINO 
 #include <Arduino.h>
-#else 
-#include <iostream>
-using namespace std;
-static uint32_t __timer = 0; 
-static uint32_t __t() {
-  __timer += 1000;
-  return __timer;
-}
-#define millis() __t()
-#endif
 
 FastPID::~FastPID() {
 }
@@ -24,30 +13,29 @@ void FastPID::clear() {
   _last_run = 0;
   _ctl = 0; 
   _cfg_err = false;
-
-#ifndef ARDUINO
-  __timer = 0;
-#endif
 }
 
-bool FastPID::configure(float kp, float ki, float kd, uint16_t db, int bits, bool sign) {
-  clear();
-  
-  // Set parameters
+bool FastPID::setCoefficients(float kp, float ki, float kd) {
   _p = floatToParam(kp);
   _i = floatToParam(ki);
   _d = floatToParam(kd);
+  return ! _cfg_err;
+}
 
-  // Set deadband 
+bool FastPID::setDeadband(uint16_t db) {
   if (_i == 0 && _d == 0) {
-    // Deadband causes permanent offsets in P controllers. 
-    // don't let a user do this. 
-    _db = 0; 
+    // Deadband causes permanent offsets in P controllers.
+    // don't let a user do this.
+    _db = 0;
+    setCfgErr();
   }
   else {
     _db = uint32_t(db) * PARAM_MULT;
   }
+  return ! _cfg_err;
+}
 
+bool FastPID::setOutputConfig(int bits, bool sign, bool differential) {
   // Set output bits
   if (bits > 16 || bits < 1) {
     _cfg_err = true; 
@@ -62,8 +50,16 @@ bool FastPID::configure(float kp, float ki, float kd, uint16_t db, int bits, boo
       _outmin = 0;
     }
   }
+  _differential = differential;
+  return ! _cfg_err;
+}
 
-  return !_cfg_err;
+bool FastPID::configure(float kp, float ki, float kd, uint16_t db, int bits, bool sign, bool diff) {
+  clear();
+  setCoefficients(kp, ki, kd);
+  setDeadband(db);
+  setOutputConfig(bits, sign, diff);
+  return ! _cfg_err; 
 }
 
 uint32_t FastPID::floatToParam(float in) {
@@ -74,12 +70,20 @@ uint32_t FastPID::floatToParam(float in) {
   return in * PARAM_MULT;
 }
 
-int16_t FastPID::step(int16_t sp, int16_t fb) {
+int16_t FastPID::step(int16_t sp, int16_t fb, uint32_t timestamp) {
 
   // Calculate delta T
   // millis(): Frequencies less than 1Hz become 1Hz. 
   //   max freqency 1 kHz (XXX: is this too low?)
-  uint32_t now = millis();
+  uint32_t now;
+  if (timestamp != 0) {
+    // Let the user specify the sample time. 
+    now = timestamp;
+  }
+  else {
+    // Otherwise use the clock
+    now = millis();
+  }
   uint32_t hz = 0;
   if (_last_run == 0) {
     // Ignore I and D on the first step. They will be 
@@ -150,9 +154,16 @@ int16_t FastPID::step(int16_t sp, int16_t fb) {
     }
   }
 
-  // int62 (ctl) + int61 = int63
-  _ctl += diff;
-
+  if (_differential) {
+    // Do not use the accumulator. Assume the control device has
+    // memory and we're publishing differential updates.
+    _ctl = diff; 
+  }
+  else {
+    // int62 (ctl) + int61 = int63
+    _ctl += diff;
+  }
+  
   // Make the output saturate
   if (_ctl > _outmax) 
     _ctl = _outmax;

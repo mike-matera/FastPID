@@ -3,6 +3,7 @@
 #include <iostream>
 
 double Setpoint, Input, Output;
+double accumulator;
 
 PID pid(&Input, &Output, &Setpoint, 0, 0, 0, DIRECT);
 
@@ -14,7 +15,7 @@ configure(PyObject *self, PyObject *args) {
   float db=0.0;
   int bits=16; 
   bool sign=false;
-
+  
   if (!PyArg_ParseTuple(args, "ffffib", &kp, &ki, &kd, &db, &bits, &sign))
     return NULL;
 
@@ -33,6 +34,7 @@ configure(PyObject *self, PyObject *args) {
     }
   }
 
+  accumulator = 0; 
   pid.SetTunings(kp, ki, kd);
   pid.SetOutputLimits(outmin, outmax);
   pid.SetMode(AUTOMATIC);
@@ -50,7 +52,8 @@ step(PyObject *self, PyObject *args) {
   Setpoint = sp;
   Input = fb; 
   pid.Compute();
-  return PyLong_FromLong(Output);
+  accumulator += Output;
+  return PyLong_FromLong(accumulator);
 }
 
 static PyMethodDef PIDMethods[] = {

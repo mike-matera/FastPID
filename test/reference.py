@@ -12,6 +12,7 @@ import math
 
 import FastPID
 import ArduinoPID
+import AutoPID
 
 import testrun
     
@@ -27,13 +28,15 @@ Run a number of random tests with the specified random seed:
 Run 100,000 random tests:
   {0} <Type> 
 
-** Type is "FastPID" or "ArduinoPID" 
+** Type is "FastPID" or "ArduinoPID" or "AutoPID"
 '''.format(sys.argv[0]))
         exit(-1)
     
     pid = FastPID
     if sys.argv[1] == 'ArduinoPID' :
       pid = ArduinoPID
+    if sys.argv[1] == 'AutoPID' :
+      pid = AutoPID
       
     if len(sys.argv) == 8 :
         p = float(sys.argv[2])

@@ -22,16 +22,21 @@ public:
     clear();
   }
 
-  FastPID(float kp, float ki, float kd, uint16_t db=0, int bits=16, bool sign=false)
+  FastPID(float kp, float ki, float kd, uint16_t db=0, int bits=16, bool sign=false, bool diff=false)
   {
-    configure(kp, ki, kd, db, bits, sign);
+    configure(kp, ki, kd, db, bits, sign, diff);
   }
 
   ~FastPID();
 
+  bool setCoefficients(float kp, float ki, float kd);
+  bool setDeadband(uint16_t db);
+  bool setOutputConfig(int bits, bool sign, bool differential=false);
+  
   void clear();
-  bool configure(float kp, float ki, float kd, uint16_t db=0, int bits=16, bool sign=false);
-  int16_t step(int16_t sp, int16_t fb);
+  bool configure(float kp, float ki, float kd, uint16_t db=0, int bits=16, bool sign=false, bool diff=false);
+  int16_t step(int16_t sp, int16_t fb, uint32_t timestamp=0);
+
   bool err() {
     return _cfg_err;
   }
@@ -47,7 +52,8 @@ private:
   uint32_t _p, _i, _d;
   uint32_t _db;
   int64_t _outmax, _outmin; 
-
+  bool _differential;
+  
   // State
   int16_t _last_sp, _last_out;
   int64_t _sum;

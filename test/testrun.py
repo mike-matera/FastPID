@@ -26,8 +26,11 @@ class testrun :
         self.mag = mag; 
 
     def impulse(self, steps) :
-        ar = numpy.array([0,1,0])
-        ar.resize((steps,))
+        ar = numpy.array([0,0])
+        #ar.resize((steps,))
+        ar = numpy.resize([1], (steps,))
+        ar[0] = 0
+        ar[1] = 0
         return ar
 
     def run(self): 
