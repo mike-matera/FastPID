@@ -1,3 +1,6 @@
 [submodule "test/Arduino-PID-Library"]
 	path = test/Arduino-PID-Library
 	url = https://github.com/br3ttb/Arduino-PID-Library.git
+[submodule "test/AutoPID"]
+	path = test/AutoPID
+	url = https://github.com/r-downing/AutoPID.git
