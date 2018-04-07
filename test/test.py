@@ -16,7 +16,35 @@ import AutoPID
 
 import testrun
     
-if __name__ == '__main__' :
+def randomtest(seed, turns, plot, pid) :
+    results = numpy.array([])
+    results.resize((turns,))
+
+    for test_num in range (turns) : 
+        test = testrun.testrun(100, pid)
+        test.random()
+        err = test.run()
+        if plot and err > 200 :
+            print ('OUTLIER: (chi^2 == {}) '.format(err), end='')
+            test.save()
+        results[test_num,] = err
+
+    best = numpy.amin(results)
+    worst = numpy.amax(results)
+    avg = numpy.average(results)
+    std = numpy.std(results)
+    
+    print ("Best: {} Worst: {} Avg: {} Std. Dev: {}".format(best,worst,avg,std))
+
+    rmax = math.log(results.max())
+    if rmax < 11 :
+        rmax  = 11
+    lbins = numpy.logspace(0, rmax, 50, base=2)
+    plt.hist(results, bins=lbins)
+    plt.show()
+
+
+def main() :
     if len(sys.argv) == 1 :
         print ('''usage: 
 Run a single test with given coefficients:
@@ -38,16 +66,15 @@ Run 100,000 random tests:
     if sys.argv[1] == 'AutoPID' :
       pid = AutoPID
       
-    if len(sys.argv) == 8 :
+    if len(sys.argv) == 7 :
         p = float(sys.argv[2])
         i = float(sys.argv[3])
         d = float(sys.argv[4])
-        db = int(sys.argv[5])
-        mag = int(sys.argv[6])
-        steps = int(sys.argv[7])
-        print ("Running p={} i={} d={} db={} mag={} steps={}".format(p, i, d, db, mag, steps))
+        mag = int(sys.argv[5])
+        steps = int(sys.argv[6])
+        print ("Running p={} i={} d={} mag={} steps={}".format(p, i, d, mag, steps))
         test = testrun.testrun(steps, pid)
-        test.configure(p, i, d, db, mag)
+        test.configure(p, i, d, mag)
         test.run()
         test.show()
 
@@ -57,7 +84,7 @@ Run 100,000 random tests:
         random.seed(seed)
         print ("Random seed:", seed)
         print ("Number of turns:", turns)
-        testrun.randomtest(seed, turns, True, pid)
+        randomtest(seed, turns, True, pid)
 
     else:
         seed = int(time.time())
@@ -65,4 +92,10 @@ Run 100,000 random tests:
         random.seed(seed)
         print ("Random seed:", seed)
         print ("Number of turns:", turns)
-        testrun.randomtest(seed, turns, False, pid)
+        randomtest(seed, turns, False, pid)
+
+    
+    
+if __name__ == '__main__' :
+    main()
+    

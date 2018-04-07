@@ -1,15 +1,9 @@
 
 class refpid : 
-    def __init__(self, p, i, d, db) : 
+    def __init__(self, p, i, d) : 
         self.kp = p
         self.ki = i
         self.kd = d 
-
-        if i == 0 and d == 0 :
-            self.dband = 0
-        else:
-            self.dband = db
-
         self.out = 0 
         self.sum = 0
         self.lasterr = 0
@@ -35,8 +29,7 @@ class refpid :
             
         delta = P + I + D 
 
-        if (abs(delta) > self.dband) :
-            self.out += delta 
+        self.out += delta 
 
         if self.out > 32767 :
             self.out = 32767
