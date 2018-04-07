@@ -1,5 +1,5 @@
 #include <Python.h>
-#include "AutoPID/AutoPID.h"
+#include "AutoPID.h"
 #include <iostream>
 
 double Setpoint, Input, Output;

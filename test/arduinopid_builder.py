@@ -4,13 +4,13 @@ import distutils.sysconfig
 from distutils.core import setup, Extension
 
 # build the harness. 
-ext = Extension('AutoPID',
-                     sources = ['auto_pid_reference.cpp', 'AutoPID/AutoPID.cpp'],
-                     include_dirs = ['AutoPID/']
+ext = Extension('ArduinoPID',
+                     sources = ['arduinopid_wrapper.cpp', 'arduinopid_lib/PID_v1.cpp'],
+                     include_dirs = ['Arduino-PID-Library/']
 )
 
 # install
-setup (name = 'AutoPID',
+setup (name = 'ArduinoPID',
        version = '1.0',
        description = 'Test harness for my a reference PID controller',
        ext_modules = [ext],
@@ -18,4 +18,4 @@ setup (name = 'AutoPID',
 )
 
 # test
-import AutoPID
+import ArduinoPID

@@ -5,7 +5,7 @@ from distutils.core import setup, Extension
 
 # build the harness. 
 ext = Extension('FastPID',
-                     sources = ['wrapper.cpp', '../src/FastPID.cpp'],
+                     sources = ['fastpid_wrapper.cpp', '../src/FastPID.cpp'],
                      include_dirs = ['../src/']
 )
 

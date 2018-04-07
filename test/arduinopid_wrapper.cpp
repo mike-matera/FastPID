@@ -1,5 +1,5 @@
 #include <Python.h>
-#include "Arduino-PID-Library/PID_v1.h"
+#include "PID_v1.h"
 #include <iostream>
 
 double Setpoint, Input, Output;

@@ -1,5 +1,6 @@
 FastPID-1.0.egg-info
 ArduinoPID-1.0.egg-info
+AutoPID-1.0.egg-info
 *.so
 build/
 __pycache__
