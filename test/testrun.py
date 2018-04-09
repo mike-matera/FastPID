@@ -17,7 +17,7 @@ class testrun :
         self.d = round(random.uniform(0, self.i), 3)
         self.mag = round(random.uniform(-1,1) * 32767)
 
-    def configure(self, p, i, d, mag) : 
+    def configure(self, p, i, d, mag=100) : 
         self.p = p;
         self.i = i; 
         self.d = d; 

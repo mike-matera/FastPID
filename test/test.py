@@ -48,7 +48,7 @@ def main() :
     if len(sys.argv) == 1 :
         print ('''usage: 
 Run a single test with given coefficients:
-  {0} <Type> <p> <i> <d> <deadband> <mag_bits> <stepcount>
+  {0} <Type> <p> <i> <d> <mag_bits> <stepcount>
 
 Run a number of random tests with the specified random seed: 
   {0} <Type> <seed> <testcount>
@@ -66,15 +66,14 @@ Run 100,000 random tests:
     if sys.argv[1] == 'AutoPID' :
       pid = AutoPID
       
-    if len(sys.argv) == 7 :
+    if len(sys.argv) == 6 :
         p = float(sys.argv[2])
         i = float(sys.argv[3])
         d = float(sys.argv[4])
-        mag = int(sys.argv[5])
-        steps = int(sys.argv[6])
-        print ("Running p={} i={} d={} mag={} steps={}".format(p, i, d, mag, steps))
+        steps = int(sys.argv[5])
+        print ("Running p={} i={} d={} steps={}".format(p, i, d, steps))
         test = testrun.testrun(steps, pid)
-        test.configure(p, i, d, mag)
+        test.configure(p, i, d)
         test.run()
         test.show()
 
