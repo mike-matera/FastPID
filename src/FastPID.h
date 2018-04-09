@@ -32,7 +32,6 @@ public:
   bool setCoefficients(float kp, float ki, float kd);
   bool setDeadband(uint16_t db);
   bool setOutputConfig(int bits, bool sign, bool differential=false);
-  
   void clear();
   bool configure(float kp, float ki, float kd, uint16_t db=0, int bits=16, bool sign=false, bool diff=false);
   int16_t step(int16_t sp, int16_t fb, uint32_t timestamp=0);
@@ -53,6 +52,7 @@ private:
   uint32_t _db;
   int64_t _outmax, _outmin; 
   bool _differential;
+  bool _cfg_err; 
   
   // State
   int16_t _last_sp, _last_out;
@@ -60,7 +60,6 @@ private:
   int32_t _last_err;
   uint32_t _last_run; 
   int64_t _ctl;
-  bool _cfg_err; 
 };
 
 #endif

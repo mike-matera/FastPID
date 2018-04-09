@@ -12,7 +12,6 @@ void FastPID::clear() {
   _last_err = 0;
   _last_run = 0;
   _ctl = 0; 
-  _cfg_err = false;
 }
 
 bool FastPID::setCoefficients(float kp, float ki, float kd) {
