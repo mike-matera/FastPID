@@ -1,6 +1,6 @@
 
 class refpid : 
-    def __init__(self, p, i, d) : 
+    def __init__(self, p, i, d, bits, sign) : 
         self.kp = p
         self.ki = i
         self.kd = d 
@@ -9,6 +9,12 @@ class refpid :
         self.lasterr = 0
         self.lastsp = 0
         self.stepno = 0
+        if sign : 
+            self.max = 2 ** (bits-1) - 1 
+            self.min = -2 ** (bits-1) 
+        else:
+            self.max = 2 ** bits - 1
+            self.min = 0 
 
     def step(self, sp, fb) :
         err = sp - fb 
@@ -31,10 +37,10 @@ class refpid :
 
         self.out += delta 
 
-        if self.out > 32767 :
-            self.out = 32767
-        elif self.out < -32768 : 
-            self.out = -32768
+        if self.out > self.max :
+            self.out = self.max
+        elif self.out < self.min : 
+            self.out = self.min
 
         self.stepno += 1
         return round(self.out)
