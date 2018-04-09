@@ -23,15 +23,14 @@ bool FastPID::setCoefficients(float kp, float ki, float kd) {
 }
 
 bool FastPID::setDeadband(uint16_t db) {
-  if (_i == 0 && _d == 0) {
+  if (db != 0 && _i == 0 && _d == 0) {
     // Deadband causes permanent offsets in P controllers.
     // don't let a user do this.
     _db = 0;
     setCfgErr();
+    return ! _cfg_err;
   }
-  else {
-    _db = uint32_t(db) * PARAM_MULT;
-  }
+  _db = uint32_t(db) * PARAM_MULT;
   return ! _cfg_err;
 }
 
