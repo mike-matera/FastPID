@@ -9,25 +9,39 @@ import os
 import sys
 import time 
 import math
+import argparse
+import matplotlib.pyplot as plt
 
 import FastPID
 import ArduinoPID
 import AutoPID
 
-import testrun
-    
-def randomtest(seed, turns, plot, pid) :
+import refpid
+import process
+
+def randomtest(seed, steps, turns, pid) :
     results = numpy.array([])
     results.resize((turns,))
 
     for test_num in range (turns) : 
-        test = testrun.testrun(100, pid)
-        test.random()
-        err = test.run()
-        if plot and err > 200 :
-            print ('OUTLIER: (chi^2 == {}) '.format(err), end='')
-            test.save()
-        results[test_num,] = err
+        kp = round(random.uniform(0, 1), 3)
+        ki = round(random.uniform(0, kp), 3)
+        kd = round(random.uniform(0, ki), 3)
+        bits = 16
+        sign = False
+        pid.configure(kp, ki, kd, bits, sign)
+        reference = refpid.refpid(kp, ki, kd, bits, sign)
+        ref = process.Process(reference, steps, turns)
+        dut = process.Process(pid, steps, turns)
+        ref.run()
+        dut.run()
+
+        # Check for fit
+        errf = numpy.square(numpy.subtract(ref.output, dut.output))
+        err = numpy.cumsum(errf) / numpy.arange(1, ref.output.size+1, dtype=float)
+        chi2 = numpy.sum(errf) / ref.output.size
+
+        results[test_num,] = chi2
 
     best = numpy.amin(results)
     worst = numpy.amax(results)
@@ -42,59 +56,68 @@ def randomtest(seed, turns, plot, pid) :
     lbins = numpy.logspace(0, rmax, 50, base=2)
     plt.hist(results, bins=lbins)
     plt.show()
-
+        
 
 def main() :
-    if len(sys.argv) == 1 :
-        print ('''usage: 
-Run a single test with given coefficients:
-  {0} <Type> <p> <i> <d> <mag_bits> <stepcount>
+    parser = argparse.ArgumentParser(description="Run PID tests")
+    parser.add_argument('test', help='The test to execute.', choices=['reference', 'random', 'load'])
+    parser.add_argument('-p', help='Kp', type=float, default=1)
+    parser.add_argument('-i', help='Ki', type=float, default=0)
+    parser.add_argument('-d', help='Kd', type=float, default=0)
+    parser.add_argument('-n', help='Number of steps to simulate.', type=int, default=100)
+    parser.add_argument('-t', help='Number of random turns to test.', type=int, default=100)
+    parser.add_argument('--obits', help='Number of output bits.', type=int, default=16)
+    parser.add_argument('--osign', help='Signedness of the output.', type=bool, default=False)
+    parser.add_argument('--pid', help='PID implementation to use.', choices=['FastPID', 'ArduinoPID', 'AutoPID'], default='FastPID')
+    parser.add_argument('--seed', help='Random seed to use.', default=int(time.time()))
+    
+    args = parser.parse_args()
 
-Run a number of random tests with the specified random seed: 
-  {0} <Type> <seed> <testcount>
+    if args.pid == 'FastPID' :
+        pid = FastPID
+    elif args.pid == 'ArduinoPID' :
+        pid = ArduinoPID
+    else:
+        pid = AutoPID        
 
-Run 100,000 random tests:
-  {0} <Type> 
-
-** Type is "FastPID" or "ArduinoPID" or "AutoPID"
-'''.format(sys.argv[0]))
+    if not pid.configure(args.p, args.i, args.d, args.obits, args.osign) :
+        print ('Error configuring the PID.')
         exit(-1)
     
-    pid = FastPID
-    if sys.argv[1] == 'ArduinoPID' :
-      pid = ArduinoPID
-    if sys.argv[1] == 'AutoPID' :
-      pid = AutoPID
-      
-    if len(sys.argv) == 6 :
-        p = float(sys.argv[2])
-        i = float(sys.argv[3])
-        d = float(sys.argv[4])
-        steps = int(sys.argv[5])
-        print ("Running p={} i={} d={} steps={}".format(p, i, d, steps))
-        test = testrun.testrun(steps, pid)
-        test.configure(p, i, d)
-        test.run()
-        test.show()
+    if args.test == 'reference' :
+        # Test the PID against the reference implementation.
+        reference = refpid.refpid(args.p, args.i, args.d, args.obits, args.osign)
+        ref = process.Process(reference, 100, args.n)
+        dut = process.Process(pid, 100, args.n)
+        ref.run()
+        dut.run()
+        plt.plot(ref.setpoint, '', ref.output, '--', dut.output, '')
+        plt.show()
 
-    elif len(sys.argv) == 4 : 
-        seed = int(sys.argv[2])
-        turns = int(sys.argv[3])
-        random.seed(seed)
-        print ("Random seed:", seed)
-        print ("Number of turns:", turns)
-        randomtest(seed, turns, True, pid)
+    if args.test == 'random' :
+        # Test random parameters vs. the reference implementation. Look for outliers. 
+        randomtest(args.seed, args.n, args.t, pid)
 
-    else:
-        seed = int(time.time())
-        turns = 100000
-        random.seed(seed)
-        print ("Random seed:", seed)
-        print ("Number of turns:", turns)
-        randomtest(seed, turns, False, pid)
+    if args.test == 'load' :
+        factory_f = process.DifferentialFactory(lambda x : math.log(x *.1) * 0.1 )
+        dut = process.Process(pid, 100, args.n)
 
-    
-    
+        x = numpy.arange(0, args.n) 
+        dut.run()
+        fig, ax1 = plt.subplots()
+        ax1.set_xlabel('Step')
+        ax1.set_ylabel('Setpoint (green), Feedback (red)')
+        ax1.tick_params('y', color='r')
+        ax1.plot(x, dut.setpoint, 'g--', dut.feedback, 'r')
+
+        ax3 = ax1.twinx()
+        ax3.set_ylabel('Output (blue)')
+        ax3.plot(x, dut.output)
+
+        #fig.tight_layout()
+        plt.show()
+        pass
+
 if __name__ == '__main__' :
     main()
     

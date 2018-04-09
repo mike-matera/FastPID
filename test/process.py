@@ -1,13 +1,16 @@
 import numpy 
 
-class FactoryProcess : 
-
-    def __init__(self) : 
-        self.output = 0 
-
-    def step(self, input_rate) : 
+class DifferentialFactory :
+    def __init__(self, func) :
+        self.output = 0
+        self.func = func
         
-        
+    def __call__(self, cmd) :
+        self.output += cmd
+        self.output -= self.func(self.output) 
+        return self.output
+    
+
 class Process : 
     '''Simulate a control process with a selectable PID controller and factory
 process functions''' 
@@ -39,9 +42,9 @@ process functions'''
     def run(self) :         
         output = 0 
         feedback = 0
-        for x, point in enumerate(self.sp) : 
+        for x, point in enumerate(self.setpoint) : 
             feedback = self.factory_func(output)
             self.output[x,] = output 
             self.feedback[x,] = feedback
-            output = self.output_filter(self.pid.step(point, feedback))
+            output = round(self.output_filter(self.pid.step(point, feedback)))
             
