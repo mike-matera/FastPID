@@ -94,8 +94,8 @@ def main() :
         
         setline = plt.plot(ref.setpoint, '', label='Setpoint')
         refline = plt.plot(ref.output, '--', label='Reference')
-        outline = plt.plot(dut.output, '', label='Output')
-        plt.legend(['Setpoint', 'Reference', 'Output'])
+        outline = plt.plot(dut.output, '', label='Output/Feedback')
+        plt.legend(['Setpoint', 'Reference', 'Out/Feedback'])
         plt.xlabel('Time (Seconds)')
         plt.ylabel('Codes')
         plt.title('{} vs. Reference (p={} i={} d={})'.format(args.pid, args.p, args.i, args.d))
