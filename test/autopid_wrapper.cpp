@@ -3,7 +3,6 @@
 #include <iostream>
 
 double Setpoint, Input, Output;
-double accumulator;
 
 AutoPID pid(&Input, &Setpoint, &Output, 0, 0, 0, 0, 0);
 
@@ -33,7 +32,6 @@ configure(PyObject *self, PyObject *args) {
     }
   }
 
-  accumulator = 0;
   pid.setGains(kp, ki, kd);
   pid.setTimeStep(1000); 
   pid.setOutputRange(outmin, outmax);
@@ -50,8 +48,7 @@ step(PyObject *self, PyObject *args) {
   Setpoint = sp;
   Input = fb; 
   pid.run();
-  accumulator += Output;
-  return PyLong_FromLong(accumulator);
+  return PyLong_FromLong(Output);
 }
 
 static PyMethodDef PIDMethods[] = {
