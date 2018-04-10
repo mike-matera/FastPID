@@ -32,7 +32,7 @@ configure(PyObject *self, PyObject *args) {
     }
   }
 
-  pid.SetTunings(kp, ki, kd, false);
+  pid.SetTunings(kp, ki, kd);
   pid.SetOutputLimits(outmin, outmax);
   pid.SetMode(AUTOMATIC);
   pid.SetSampleTime(1000); 
