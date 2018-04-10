@@ -91,7 +91,14 @@ def main() :
         dut = process.Process(pid, 100, args.n)
         ref.run()
         dut.run()
-        plt.plot(ref.setpoint, '', ref.output, '--', dut.output, '')
+        
+        setline = plt.plot(ref.setpoint, '', label='Setpoint')
+        refline = plt.plot(ref.output, '--', label='Reference')
+        outline = plt.plot(dut.output, '', label='Output')
+        plt.legend(['Setpoint', 'Reference', 'Output'])
+        plt.xlabel('Time (Seconds)')
+        plt.ylabel('Codes')
+        plt.title('{} vs. Reference (p={} i={} d={})'.format(args.pid, args.p, args.i, args.d))
         plt.show()
 
     if args.test == 'random' :
