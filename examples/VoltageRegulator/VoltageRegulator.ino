@@ -1,3 +1,8 @@
+/********************************************************
+ * PID Basic Example
+ * Reading analog input 0 to control analog PWM output 3
+ ********************************************************/
+
 #include <FastPID.h>
 
 #define PIN_INPUT A1
@@ -5,7 +10,7 @@
 
 double Kp=0, Ki=0, Kd=1;
 uint16_t deadband = 0; 
-int output_bits = 8; 
+int output_bits = 1; 
 bool output_signed = false;
 
 FastPID myPID(Kp, Ki, Kd, deadband, output_bits, output_signed);
@@ -29,3 +34,4 @@ void loop()
   Serial.println(output);
   delay(100);
 }
+
