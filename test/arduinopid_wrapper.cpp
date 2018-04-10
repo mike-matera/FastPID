@@ -3,7 +3,6 @@
 #include <iostream>
 
 double Setpoint, Input, Output;
-double accumulator;
 
 PID pid(&Input, &Output, &Setpoint, 0, 0, 0, DIRECT);
 
@@ -33,8 +32,7 @@ configure(PyObject *self, PyObject *args) {
     }
   }
 
-  accumulator = 0; 
-  pid.SetTunings(kp, ki, kd);
+  pid.SetTunings(kp, ki, kd, false);
   pid.SetOutputLimits(outmin, outmax);
   pid.SetMode(AUTOMATIC);
   pid.SetSampleTime(1000); 
@@ -51,8 +49,7 @@ step(PyObject *self, PyObject *args) {
   Setpoint = sp;
   Input = fb; 
   pid.Compute();
-  accumulator += Output;
-  return PyLong_FromLong(accumulator);
+  return PyLong_FromLong(Output);
 }
 
 static PyMethodDef PIDMethods[] = {
