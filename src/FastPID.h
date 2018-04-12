@@ -59,7 +59,6 @@ private:
   int64_t _sum;
   int32_t _last_err;
   uint32_t _last_run; 
-  int64_t _ctl;
 };
 
 #endif

@@ -11,7 +11,6 @@ void FastPID::clear() {
   _sum = 0; 
   _last_err = 0;
   _last_run = 0;
-  _ctl = 0; 
 }
 
 bool FastPID::setCoefficients(float kp, float ki, float kd) {
@@ -136,47 +135,37 @@ int16_t FastPID::step(int16_t sp, int16_t fb, uint32_t timestamp) {
   }
 
   // int39 (P) + int43 (I) + int58 (D) = int61
-  int64_t diff = P + I + D;
+  int64_t out = P + I + D;
 
   // Apply the deadband. 
-  if (_db && diff != 0) {
-    if (diff < 0) {
-      if (-diff < _db) {
-	diff = 0;
+  if (_db != 0 && out != 0) {
+    if (out < 0) {
+      if (-out < _db) {
+	out = 0;
       }
     }
     else {
-      if (diff < _db) {
-	diff = 0;
+      if (out < _db) {
+	out = 0;
       }
     }
   }
-
-  if (_differential) {
-    // Do not use the accumulator. Assume the control device has
-    // memory and we're publishing differential updates.
-    _ctl = diff; 
-  }
-  else {
-    // int62 (ctl) + int61 = int63
-    _ctl += diff;
-  }
   
   // Make the output saturate
-  if (_ctl > _outmax) 
-    _ctl = _outmax;
-  else if (_ctl < _outmin) 
-    _ctl = _outmin;
+  if (out > _outmax) 
+    out = _outmax;
+  else if (out < _outmin) 
+    out = _outmin;
 
   // Remove the integer scaling factor. 
-  int16_t out = _ctl >> PARAM_SHIFT;
+  int16_t rval = out >> PARAM_SHIFT;
 
   // Fair rounding.
-  if (_ctl & (0x1ULL << (PARAM_SHIFT - 1))) {
-    out++;
+  if (out & (0x1ULL << (PARAM_SHIFT - 1))) {
+    rval++;
   }
 
-  return out;
+  return rval;
 }
 
 void FastPID::setCfgErr() {

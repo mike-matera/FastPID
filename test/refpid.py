@@ -4,7 +4,6 @@ class refpid :
         self.kp = p
         self.ki = i
         self.kd = d 
-        self.out = 0 
         self.sum = 0
         self.lasterr = 0
         self.lastsp = 0
@@ -33,14 +32,12 @@ class refpid :
             I = 0
             D = 0
             
-        delta = P + I + D 
+        out = P + I + D 
 
-        self.out += delta 
-
-        if self.out > self.max :
-            self.out = self.max
-        elif self.out < self.min : 
-            self.out = self.min
+        if out > self.max :
+            out = self.max
+        elif out < self.min : 
+            out = self.min
 
         self.stepno += 1
-        return round(self.out)
+        return round(out)
