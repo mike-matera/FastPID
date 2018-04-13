@@ -21,10 +21,10 @@ class refpid :
         P = err * self.kp
 
         if self.stepno > 0 : 
-            self.sum += err 
-            I = self.sum * self.ki
+            self.sum += err * self.ki
+            I = self.sum 
 
-            D = self.kd * ((sp - self.lastsp) - (err - self.lasterr))
+            D = self.kd * ((err - self.lasterr) - (sp - self.lastsp))
             self.lasterr = err  
             self.lastsp = sp 
 

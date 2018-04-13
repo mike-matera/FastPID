@@ -126,7 +126,7 @@ int16_t FastPID::step(int16_t sp, int16_t fb, uint32_t timestamp) {
 
   if (_d && hz) {
     // int17 - (int16 - int16) = int19
-    int32_t deriv = (sp - _last_sp) - (err - _last_err);
+    int32_t deriv = (err - _last_err) - (sp - _last_sp);
     _last_sp = sp; 
     _last_err = err; 
 
