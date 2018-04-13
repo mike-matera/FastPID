@@ -20,18 +20,6 @@ bool FastPID::setCoefficients(float kp, float ki, float kd) {
   return ! _cfg_err;
 }
 
-bool FastPID::setDeadband(uint16_t db) {
-  if (db != 0 && _i == 0 && _d == 0) {
-    // Deadband causes permanent offsets in P controllers.
-    // don't let a user do this.
-    _db = 0;
-    setCfgErr();
-    return ! _cfg_err;
-  }
-  _db = uint32_t(db) * PARAM_MULT;
-  return ! _cfg_err;
-}
-
 bool FastPID::setOutputConfig(int bits, bool sign, bool differential) {
   // Set output bits
   if (bits > 16 || bits < 1) {
@@ -51,10 +39,9 @@ bool FastPID::setOutputConfig(int bits, bool sign, bool differential) {
   return ! _cfg_err;
 }
 
-bool FastPID::configure(float kp, float ki, float kd, uint16_t db, int bits, bool sign, bool diff) {
+bool FastPID::configure(float kp, float ki, float kd, int bits, bool sign, bool diff) {
   clear();
   setCoefficients(kp, ki, kd);
-  setDeadband(db);
   setOutputConfig(bits, sign, diff);
   return ! _cfg_err; 
 }
@@ -136,20 +123,6 @@ int16_t FastPID::step(int16_t sp, int16_t fb, uint32_t timestamp) {
 
   // int39 (P) + int43 (I) + int58 (D) = int61
   int64_t out = P + I + D;
-
-  // Apply the deadband. 
-  if (_db != 0 && out != 0) {
-    if (out < 0) {
-      if (-out < _db) {
-	out = 0;
-      }
-    }
-    else {
-      if (out < _db) {
-	out = 0;
-      }
-    }
-  }
   
   // Make the output saturate
   if (out > _outmax) 
