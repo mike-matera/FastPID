@@ -32,11 +32,10 @@ Time is computed automatically each time ```step()``` is called based on ```mill
 #define PIN_OUTPUT 10
 
 double Kp=0, Ki=0, Kd=1;
-uint16_t deadband = 0; 
 int output_bits = 8; 
 bool output_signed = false;
 
-FastPID myPID(Kp, Ki, Kd, deadband, output_bits, output_signed);
+FastPID myPID(Kp, Ki, Kd, output_bits, output_signed);
 
 void setup()
 {
