@@ -11,7 +11,8 @@ void FastPID::clear() {
   _sum = 0; 
   _last_err = 0;
   _last_run = 0;
-}
+  _cfg_err = false;
+} 
 
 bool FastPID::setCoefficients(float kp, float ki, float kd) {
   _p = floatToParam(kp);
@@ -51,7 +52,15 @@ uint32_t FastPID::floatToParam(float in) {
     _cfg_err = true;
     return 0;
   }
-  return in * PARAM_MULT;
+
+  uint32_t param = in * PARAM_MULT;
+
+  if (in != 0 && param == 0) {
+    _cfg_err = true;
+    return 0;
+  }
+  
+  return param;
 }
 
 int16_t FastPID::step(int16_t sp, int16_t fb, uint32_t timestamp) {
