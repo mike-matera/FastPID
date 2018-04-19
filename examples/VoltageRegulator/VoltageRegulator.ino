@@ -1,19 +1,28 @@
-/********************************************************
- * PID Basic Example
- * Reading analog input 0 to control analog PWM output 3
+/*
+ * PID Voltage Regulator Example. 
+ * 
+ * See the accompaning circuit in VoltageRegulator.png. 
+ * The circuit is a very poor regulator that's complex
+ * and nonlinear. A good example to show PID tuning. 
+ * 
+ * If connected correctly the LED shows the approximate
+ * output of the system. The brightness should respond
+ * to the dial. Check the serial port to see what the 
+ * actual system values are. 
+ * 
  ********************************************************/
 
 #include <FastPID.h>
 
-#define PIN_INPUT A1
-#define PIN_OUTPUT 10
+#define PIN_INPUT     A0
+#define PIN_SETPOINT  A1
+#define PIN_OUTPUT    9
 
-double Kp=0, Ki=0, Kd=1;
-uint16_t deadband = 0; 
-int output_bits = 1; 
+float Kp=0.1, Ki=0.5, Kd=0;
+int output_bits = 8;
 bool output_signed = false;
 
-FastPID myPID(Kp, Ki, Kd, deadband, output_bits, output_signed);
+FastPID myPID(Kp, Ki, Kd, output_bits, output_signed);
 
 void setup()
 {
@@ -22,10 +31,10 @@ void setup()
 
 void loop()
 {
-  int setpoint = 500; 
+  int setpoint = analogRead(PIN_SETPOINT) / 2; 
   int feedback = analogRead(PIN_INPUT);
-  int output = myPID.step(setpoint, feedback);
-  analogWrite(PIN_OUTPUT, 255 - output);
+  uint8_t output = myPID.step(setpoint, feedback);
+  analogWrite(PIN_OUTPUT, output);
   Serial.print("sp: "); 
   Serial.print(setpoint); 
   Serial.print(" fb: "); 
