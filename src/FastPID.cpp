@@ -10,14 +10,13 @@ void FastPID::clear() {
   _last_out = 0;
   _sum = 0; 
   _last_err = 0;
-  _last_run = 0;
   _cfg_err = false;
 } 
 
-bool FastPID::setCoefficients(float kp, float ki, float kd) {
+bool FastPID::setCoefficients(float kp, float ki, float kd, float hz) {
   _p = floatToParam(kp);
-  _i = floatToParam(ki);
-  _d = floatToParam(kd);
+  _i = floatToParam(ki / hz);
+  _d = floatToParam(kd * hz);
   return ! _cfg_err;
 }
 
@@ -40,9 +39,9 @@ bool FastPID::setOutputConfig(int bits, bool sign, bool differential) {
   return ! _cfg_err;
 }
 
-bool FastPID::configure(float kp, float ki, float kd, int bits, bool sign, bool diff) {
+bool FastPID::configure(float kp, float ki, float kd, float hz, int bits, bool sign, bool diff) {
   clear();
-  setCoefficients(kp, ki, kd);
+  setCoefficients(kp, ki, kd, hz);
   setOutputConfig(bits, sign, diff);
   return ! _cfg_err; 
 }
@@ -63,39 +62,7 @@ uint32_t FastPID::floatToParam(float in) {
   return param;
 }
 
-int16_t FastPID::step(int16_t sp, int16_t fb, uint32_t timestamp) {
-
-  // Calculate delta T
-  // millis(): Frequencies less than 1Hz become 1Hz. 
-  //   max freqency 1 kHz (XXX: is this too low?)
-  uint32_t now;
-  if (timestamp != 0) {
-    // Let the user specify the sample time. 
-    now = timestamp;
-  }
-  else {
-    // Otherwise use the clock
-    now = millis();
-  }
-  uint32_t hz = 0;
-  if (_last_run == 0) {
-    // Ignore I and D on the first step. They will be 
-    // unreliable because no time has really passed.
-    hz = 0;
-  }
-  else {
-    if (now < _last_run) {
-      // 47-day timebomb
-      hz = uint32_t(1000) / (now + (~_last_run));
-    }
-    else {
-      hz = uint32_t(1000) / (now - _last_run); 
-    }
-    if (hz == 0) 
-      hz = 1;
-  }
-
-  _last_run = now;
+int16_t FastPID::step(int16_t sp, int16_t fb) {
 
   // int16 + int16 = int17
   int32_t err = int32_t(sp) - int32_t(fb); 
@@ -106,9 +73,9 @@ int16_t FastPID::step(int16_t sp, int16_t fb, uint32_t timestamp) {
     P = int64_t(_p) * int64_t(err);
   }
 
-  if (_i && hz) {
-    // int31 + ( int25 *  int17) / int10  = int43
-    _sum += (int64_t(_i) * int32_t(err)) / int32_t(hz); 
+  if (_i) {
+    // XXX: int31 + (int25 * int17) = int32
+    _sum += int64_t(_i) * int32_t(err);
 
     // Limit sum to 31-bit signed value so that it saturates, never overflows.
     if (_sum > INTEG_MAX)
@@ -120,17 +87,17 @@ int16_t FastPID::step(int16_t sp, int16_t fb, uint32_t timestamp) {
     I = int64_t(_sum);
   }
 
-  if (_d && hz) {
+  if (_d) {
     // int17 - (int16 - int16) = int19
     int32_t deriv = (err - _last_err) - (sp - _last_sp);
     _last_sp = sp; 
     _last_err = err; 
 
-    // uint23 * int19 * uint16 = int58
-    D = int64_t(_d) * int64_t(deriv) * int64_t(hz);
+    // XXX: uint25 * int19 = int44
+    D = int64_t(_d) * int64_t(deriv);
   }
 
-  // int39 (P) + int43 (I) + int58 (D) = int61
+  // int39 (P) + int43 (I) + int44 (D) = int45
   int64_t out = P + I + D;
   
   // Make the output saturate

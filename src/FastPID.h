@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-#define INTEG_MAX    (INT64_MAX >> 1)
-#define INTEG_MIN    (INT64_MIN >> 1)
+#define INTEG_MAX    (INT32_MAX >> 1)
+#define INTEG_MIN    (INT32_MIN >> 1)
 
 #define PARAM_SHIFT  15
 #define PARAM_BITS   25
@@ -22,18 +22,18 @@ public:
     clear();
   }
 
-  FastPID(float kp, float ki, float kd, int bits=16, bool sign=false, bool diff=false)
+  FastPID(float kp, float ki, float kd, float hz, int bits=16, bool sign=false, bool diff=false)
   {
-    configure(kp, ki, kd, bits, sign, diff);
+    configure(kp, ki, kd, hz, bits, sign, diff);
   }
 
   ~FastPID();
 
-  bool setCoefficients(float kp, float ki, float kd);
+  bool setCoefficients(float kp, float ki, float kd, float hz);
   bool setOutputConfig(int bits, bool sign, bool differential=false);
   void clear();
-  bool configure(float kp, float ki, float kd, int bits=16, bool sign=false, bool diff=false);
-  int16_t step(int16_t sp, int16_t fb, uint32_t timestamp=0);
+  bool configure(float kp, float ki, float kd, float hz, int bits=16, bool sign=false, bool diff=false);
+  int16_t step(int16_t sp, int16_t fb);
 
   bool err() {
     return _cfg_err;
@@ -56,7 +56,6 @@ private:
   int16_t _last_sp, _last_out;
   int64_t _sum;
   int32_t _last_err;
-  uint32_t _last_run; 
 };
 
 #endif
