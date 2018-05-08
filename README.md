@@ -33,6 +33,19 @@ The input and the setpoint are an ```int16_t``` this matches the width of Analog
   * ```bits``` - The output width will be limited to values inside of this bit range. Valid values are 1 through 16 
   * ```sign``` If ```true``` the output range is [-2^(bits-1), -2^(bits-1)-1]. If ```false``` output range is [0, 2^(bits-1)-1]. **The maximum output value of the controller is 32767 (even in 16 bit unsigned mode)** 
 
+## Performance 
+
+FastPID performance varies depending on the coefficients. When a coefficient is zero less calculation is done. The controller was benchmarked using an Arduino UNO and the code below. 
+
+| Kp | Ki | Kd | Step Time (uS) | 
+| -- | -- | -- | -------------- |
+| 0.1 | 0.5 | 0.1 | ~64 | 
+| 0.1 | 0.5 | 0 | ~56 | 
+| 0.1 | 0 | 0 | ~28 | 
+| 0 | 0 | 0 | ~28 | 
+
+For comparison the excellent [ArduinoPID](https://github.com/br3ttb/Arduino-PID-Library) library takes an average of about 90-100 uS per step with all non-zero coefficients. 
+
 ## Sample Code 
 
 ```c++ 
@@ -42,7 +55,7 @@ The input and the setpoint are an ```int16_t``` this matches the width of Analog
 #define PIN_SETPOINT  A1
 #define PIN_OUTPUT    9
 
-float Kp=0.1, Ki=0.5, Kd=0, Hz=10;
+float Kp=0.1, Ki=0.5, Kd=0.1, Hz=10;
 int output_bits = 8;
 bool output_signed = false;
 
@@ -57,9 +70,13 @@ void loop()
 {
   int setpoint = analogRead(PIN_SETPOINT) / 2; 
   int feedback = analogRead(PIN_INPUT);
+  int ts = micros();
   uint8_t output = myPID.step(setpoint, feedback);
+  int tss = micros();
   analogWrite(PIN_OUTPUT, output);
-  Serial.print("sp: "); 
+  Serial.print("(Fast) micros: "); 
+  Serial.print(tss - ts);
+  Serial.print(" sp: "); 
   Serial.print(setpoint); 
   Serial.print(" fb: "); 
   Serial.print(feedback);
