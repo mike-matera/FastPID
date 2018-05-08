@@ -19,12 +19,14 @@ import AutoPID
 import refpid
 import process
 
-def randomtest(seed, steps, turns, pid) :
+def randomtest(seed, steps, turns, pid, name) :
+    random.seed(a=seed) 
     results = numpy.array([])
     results.resize((turns,))
+    outdir = 'randomtest-seed-{}'.format(seed)
 
     for test_num in range (turns) : 
-        kp = round(random.uniform(0, 1), 3)
+        kp = round(random.uniform(0, 255), 3)
         ki = round(random.uniform(0, kp), 3)
         kd = round(random.uniform(0, ki), 3)
         bits = 16
@@ -43,6 +45,20 @@ def randomtest(seed, steps, turns, pid) :
 
         results[test_num,] = chi2
 
+        if chi2 > 1000 :
+            if not os.path.isdir(outdir) :
+                os.mkdir(outdir)
+            outfile = os.path.join(outdir, "{}-p{}-i{}-d{}.png".format(name, kp, ki, kd))
+            setline = plt.plot(ref.setpoint, '', label='Setpoint')
+            refline = plt.plot(ref.output, '', label='Reference')
+            outline = plt.plot(dut.output, '', label='Output/Feedback')
+            plt.legend(['Setpoint', 'Reference', 'Out/Feedback'])
+            plt.xlabel('Time (Seconds)')
+            plt.ylabel('Codes')
+            plt.title('{} vs. Reference (p={} i={} d={})'.format(name, kp, ki, kd))
+            plt.savefig(outfile)
+            plt.close()
+            
     best = numpy.amin(results)
     worst = numpy.amax(results)
     avg = numpy.average(results)
@@ -55,8 +71,9 @@ def randomtest(seed, steps, turns, pid) :
         rmax  = 11
     lbins = numpy.logspace(0, rmax, 50, base=2)
     plt.hist(results, bins=lbins)
+    outfile = os.path.join(outdir, "{}-histogram.png".format(name))
+    plt.savefig(outfile)
     plt.show()
-        
 
 def main() :
     parser = argparse.ArgumentParser(description="Run PID tests")
@@ -103,7 +120,7 @@ def main() :
 
     if args.test == 'random' :
         # Test random parameters vs. the reference implementation. Look for outliers. 
-        randomtest(args.seed, args.n, args.t, pid)
+        randomtest(args.seed, args.n, args.t, pid, args.pid)
 
     if args.test == 'load' :
         factory_f = process.DifferentialFactory(lambda x : math.log(x *.1) * 0.1 )
