@@ -8,11 +8,10 @@ class refpid :
         self.lasterr = 0
         self.lastsp = 0
         self.stepno = 0
+        self.max = 2 ** (bits-1) - 1 
         if sign : 
-            self.max = 2 ** (bits-1) - 1 
             self.min = -2 ** (bits-1) 
         else:
-            self.max = 2 ** bits - 1
             self.min = 0 
 
     def step(self, sp, fb) :

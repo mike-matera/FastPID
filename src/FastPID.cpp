@@ -20,29 +20,28 @@ bool FastPID::setCoefficients(float kp, float ki, float kd, float hz) {
   return ! _cfg_err;
 }
 
-bool FastPID::setOutputConfig(int bits, bool sign, bool differential) {
+bool FastPID::setOutputConfig(int bits, bool sign) {
   // Set output bits
   if (bits > 16 || bits < 1) {
     _cfg_err = true; 
   }
   else {
+    _outmax = (0xFFFFULL >> (17 - bits)) * PARAM_MULT;
     if (sign) {
-      _outmax = ((0x1ULL << (bits - 1)) - 1) * PARAM_MULT;
-      _outmin = -((0x1ULL << (bits - 1))) * PARAM_MULT;
+      _outmin = -((0xFFFFULL >> (17 - bits)) + 1) * PARAM_MULT;
     }
     else {
-      _outmax = ((0x1ULL << bits) - 1) * PARAM_MULT;
       _outmin = 0;
     }
   }
-  _differential = differential;
+  
   return ! _cfg_err;
 }
 
-bool FastPID::configure(float kp, float ki, float kd, float hz, int bits, bool sign, bool diff) {
+bool FastPID::configure(float kp, float ki, float kd, float hz, int bits, bool sign) {
   clear();
   setCoefficients(kp, ki, kd, hz);
-  setOutputConfig(bits, sign, diff);
+  setOutputConfig(bits, sign);
   return ! _cfg_err; 
 }
 
@@ -76,7 +75,7 @@ int16_t FastPID::step(int16_t sp, int16_t fb) {
 
   if (_i) {
     // int17 * int16 = int33
-    _sum += int32_t(err) * int32_t(_i);
+    _sum += int64_t(err) * int64_t(_i);
 
     // Limit sum to 32-bit signed value so that it saturates, never overflows.
     if (_sum > INTEG_MAX)
@@ -105,8 +104,8 @@ int16_t FastPID::step(int16_t sp, int16_t fb) {
   }
 
   // int32 (P) + int32 (I) + int32 (D) = int34
-  int64_t out = P + I + D;
-  
+  int64_t out = int64_t(P) + int64_t(I) + int64_t(D);
+
   // Make the output saturate
   if (out > _outmax) 
     out = _outmax;
