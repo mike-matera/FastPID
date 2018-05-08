@@ -24,7 +24,7 @@ step(PyObject *self, PyObject *args) {
   if (!PyArg_ParseTuple(args, "ii", &sp, &err))
     return NULL;
 
-  return PyLong_FromLong((uint16_t) pid.step(sp, err));
+  return PyLong_FromLong(pid.step(sp, err));
 }
 
 static PyMethodDef PIDMethods[] = {
