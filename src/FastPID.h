@@ -3,8 +3,10 @@
 
 #include <stdint.h>
 
-#define INTEG_MAX    (INT32_MAX >> 1)
-#define INTEG_MIN    (INT32_MIN >> 1)
+#define INTEG_MAX    (INT32_MAX)
+#define INTEG_MIN    (INT32_MIN)
+#define DERIV_MAX    (INT16_MAX)
+#define DERIV_MIN    (INT16_MIN)
 
 #define PARAM_SHIFT  8
 #define PARAM_BITS   16

@@ -67,7 +67,7 @@ int16_t FastPID::step(int16_t sp, int16_t fb) {
   // int16 + int16 = int17
   int32_t err = int32_t(sp) - int32_t(fb);
   int32_t P = 0, I = 0;
-  int64_t D = 0;
+  int32_t D = 0;
 
   if (_p) {
     // uint16 * int16 = int32
@@ -78,13 +78,13 @@ int16_t FastPID::step(int16_t sp, int16_t fb) {
     // int17 * int16 = int33
     _sum += int32_t(err) * int32_t(_i);
 
-    // Limit sum to 31-bit signed value so that it saturates, never overflows.
+    // Limit sum to 32-bit signed value so that it saturates, never overflows.
     if (_sum > INTEG_MAX)
       _sum = INTEG_MAX;
     else if (_sum < INTEG_MIN)
       _sum = INTEG_MIN;
 
-    // int31
+    // int32
     I = _sum;
   }
 
@@ -94,11 +94,17 @@ int16_t FastPID::step(int16_t sp, int16_t fb) {
     _last_sp = sp; 
     _last_err = err; 
 
-    // int19 * int16 = int35
-    D = int64_t(_d) * int64_t(deriv);
+    // Limit the derivative to 16-bit signed value.
+    if (deriv > DERIV_MAX)
+      deriv = DERIV_MAX;
+    else if (deriv < DERIV_MIN)
+      deriv = DERIV_MIN;
+
+    // int16 * int16 = int32
+    D = int32_t(_d) * int32_t(deriv);
   }
 
-  // int39 (P) + int43 (I) + int44 (D) = int45
+  // int32 (P) + int32 (I) + int32 (D) = int34
   int64_t out = P + I + D;
   
   // Make the output saturate
