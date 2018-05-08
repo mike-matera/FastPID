@@ -14,11 +14,11 @@ This PID controller is faster than alternatives for Arduino becuase it avoids ex
 
 ### Coefficient Domain 
 
-The computation pipeline expects 16 bit coefficients. This is controlled by ``PARAM_BITS`` and should not be changed or caluclations may overflow. The number of bits before and after the decimal place is controlled by ``PARAM_SHIFT`` in FastPID.h. The default value for ``PARAM_SHIFT`` is 8.
+The computation pipeline expects 16 bit coefficients. This is controlled by ``PARAM_BITS`` and should not be changed or caluclations may overflow. The number of bits before and after the decimal place is controlled by ``PARAM_SHIFT`` in FastPID.h. The default value for ``PARAM_SHIFT`` is 8 and can be changed to suit your application.
 
-  **The parameter P domain is [0.00390625 to 255] inclusive.** 
-  **The parameter I domain is P / Hz** 
-  **The parameter D domain is P * Hz** 
+  * **The parameter P domain is [0.00390625 to 255] inclusive.** 
+  * **The parameter I domain is P / Hz** 
+  * **The parameter D domain is P * Hz** 
 
 The controller checks for parameter domain violations and won't operate if a coefficient is outside of the range. All of the configuration operations return ```bool``` to alert the user of an error. The ```err()``` function checks the error condition. Errors can be cleared with the ```clear()``` function.
 
