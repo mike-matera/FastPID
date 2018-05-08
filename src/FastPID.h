@@ -6,8 +6,8 @@
 #define INTEG_MAX    (INT32_MAX >> 1)
 #define INTEG_MIN    (INT32_MIN >> 1)
 
-#define PARAM_SHIFT  15
-#define PARAM_BITS   25
+#define PARAM_SHIFT  8
+#define PARAM_BITS   16
 #define PARAM_MAX    (((0x1ULL << PARAM_BITS)-1) >> PARAM_SHIFT) 
 #define PARAM_MULT   (((0x1ULL << PARAM_BITS)-1) >> (PARAM_BITS - PARAM_SHIFT)) 
 

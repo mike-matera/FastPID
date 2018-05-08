@@ -65,17 +65,18 @@ uint32_t FastPID::floatToParam(float in) {
 int16_t FastPID::step(int16_t sp, int16_t fb) {
 
   // int16 + int16 = int17
-  int32_t err = int32_t(sp) - int32_t(fb); 
-  int64_t P = 0, I = 0, D = 0;
+  int32_t err = int32_t(sp) - int32_t(fb);
+  int32_t P = 0, I = 0;
+  int64_t D = 0;
 
   if (_p) {
-    // uint23 * int16 = int39
-    P = int64_t(_p) * int64_t(err);
+    // uint16 * int16 = int32
+    P = int32_t(_p) * int32_t(err);
   }
 
   if (_i) {
-    // XXX: int31 + (int25 * int17) = int32
-    _sum += int64_t(_i) * int32_t(err);
+    // int17 * int16 = int33
+    _sum += int32_t(err) * int32_t(_i);
 
     // Limit sum to 31-bit signed value so that it saturates, never overflows.
     if (_sum > INTEG_MAX)
@@ -83,17 +84,17 @@ int16_t FastPID::step(int16_t sp, int16_t fb) {
     else if (_sum < INTEG_MIN)
       _sum = INTEG_MIN;
 
-    // int43
-    I = int64_t(_sum);
+    // int31
+    I = _sum;
   }
 
   if (_d) {
-    // int17 - (int16 - int16) = int19
-    int32_t deriv = (err - _last_err) - (sp - _last_sp);
+    // (int17 - int16) - (int16 - int16) = int19
+    int32_t deriv = (err - _last_err) - int32_t(sp - _last_sp);
     _last_sp = sp; 
     _last_err = err; 
 
-    // XXX: uint25 * int19 = int44
+    // int19 * int16 = int35
     D = int64_t(_d) * int64_t(deriv);
   }
 
