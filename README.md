@@ -1,5 +1,5 @@
 # FastPID
-A fast fixed-point PID controller for Arduino 
+A fast 32-bit fixed-point PID controller for Arduino 
 
 ## About 
 
@@ -14,9 +14,11 @@ This PID controller is faster than alternatives for Arduino becuase it avoids ex
 
 ### Coefficient Domain 
 
-The computation pipeline expects 25 bit coefficients. This is controlled by ``PARAM_BITS`` and cannot be changed without breaking the controller. The number of bits before and after the decimal place is controlled by ``PARAM_SHIFT`` in FastPID.h. The default value for ``PARAM_SHIFT`` is 15.
+The computation pipeline expects 16 bit coefficients. This is controlled by ``PARAM_BITS`` and should not be changed or caluclations may overflow. The number of bits before and after the decimal place is controlled by ``PARAM_SHIFT`` in FastPID.h. The default value for ``PARAM_SHIFT`` is 8.
 
-  **The parameter domain is [1023 to 0.00006103515625] inclusive** 
+  **The parameter P domain is [0.00390625 to 255] inclusive.** 
+  **The parameter I domain is P / Hz** 
+  **The parameter D domain is P * Hz** 
 
 The controller checks for parameter domain violations and won't operate if a coefficient is outside of the range. All of the configuration operations return ```bool``` to alert the user of an error. The ```err()``` function checks the error condition. Errors can be cleared with the ```clear()``` function.
 
@@ -28,10 +30,8 @@ The controller checks for parameter domain violations and won't operate if a coe
 
 The input and the setpoint are an ```int16_t``` this matches the width of Analog pins and accomodate negative readings and setpoints. The output of the PID is an ```int16_t```. The actual bit-width and signedness of the output can be configured. 
   
-  * ```bits``` - The output width will be limited to values inside of this bit range. Valid values are 16 through 1 
-  * ```sign``` If ```true``` the output range is [-2^(bits-1), -2^(bits-1)-1]. If ```false``` output range is [0, 2^bits-1]
-
-If you're using an unsigned type as an output be sure to cast the output so you don't inadvertantly get a negative value. 
+  * ```bits``` - The output width will be limited to values inside of this bit range. Valid values are 1 through 16 
+  * ```sign``` If ```true``` the output range is [-2^(bits-1), -2^(bits-1)-1]. If ```false``` output range is [0, 2^(bits-1)-1]. **The maximum output value of the controller is 32767 (even in 16 bit unsigned mode)** 
 
 ## Sample Code 
 
