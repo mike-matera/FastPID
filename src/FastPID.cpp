@@ -26,7 +26,12 @@ bool FastPID::setOutputConfig(int bits, bool sign) {
     _cfg_err = true; 
   }
   else {
-    _outmax = (0xFFFFULL >> (17 - bits)) * PARAM_MULT;
+    if (bits == 16) {
+      _outmax = (0xFFFFULL >> (17 - bits)) * PARAM_MULT;
+    }
+    else{
+      _outmax = (0xFFFFULL >> (16 - bits)) * PARAM_MULT;
+    }
     if (sign) {
       _outmin = -((0xFFFFULL >> (17 - bits)) + 1) * PARAM_MULT;
     }
@@ -34,7 +39,6 @@ bool FastPID::setOutputConfig(int bits, bool sign) {
       _outmin = 0;
     }
   }
-  
   return ! _cfg_err;
 }
 
