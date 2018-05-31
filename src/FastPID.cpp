@@ -23,7 +23,7 @@ bool FastPID::setCoefficients(float kp, float ki, float kd, float hz) {
 bool FastPID::setOutputConfig(int bits, bool sign) {
   // Set output bits
   if (bits > 16 || bits < 1) {
-    _cfg_err = true; 
+    setCfgErr();
   }
   else {
     if (bits == 16) {
@@ -42,10 +42,15 @@ bool FastPID::setOutputConfig(int bits, bool sign) {
   return ! _cfg_err;
 }
 
-bool setOutputRange(int16_t min, int16_t max)
+bool FastPID::setOutputRange(int16_t min, int16_t max)
 {
+  if (min >= max) {
+    setCfgErr();
+    return ! _cfg_err;
+  }
   _outmin = int64_t(min) * PARAM_MULT;
   _outmax = int64_t(max) * PARAM_MULT;
+  return ! _cfg_err;
 }
 
 bool FastPID::configure(float kp, float ki, float kd, float hz, int bits, bool sign) {

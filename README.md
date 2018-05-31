@@ -46,6 +46,87 @@ FastPID performance varies depending on the coefficients. When a coefficient is 
 
 For comparison the excellent [ArduinoPID](https://github.com/br3ttb/Arduino-PID-Library) library takes an average of about 90-100 uS per step with all non-zero coefficients. 
 
+## API
+
+The API strives to be simple and clear. I won't implment functions in the controller that would be better implemented outside of the controller.
+
+```c++
+FastPID()
+```
+Construct a default controller. The default coefficients are all zero. Do not use a default-constructed controller until after you've called ```setCoefficients()``` and ``setOutputconfig()```
+
+```c++
+FastPID(float kp, float ki, float kd, float hz, int bits=16, bool sign=false)
+```
+Construct a controller that's ready to go. Calls the following:
+```c++
+    configure(kp, ki, kd, hz, bits, sign);
+```
+
+```c++
+bool setCoefficients(float kp, float ki, float kd, float hz);
+```
+Set the PID coefficients. The coefficients ``ki`` and ``kd`` are scaled by the value of ``hz``. The ``hz`` value informs the PID of the rate you will call ``step()``. You are required to call ``step()`` at the supplied rate and poor performance will happen if you do something else. 
+
+Returns ``false`` if a configuration error has occured. Which could be from a previous call.```
+
+```c++
+bool setOutputConfig(int bits, bool sign);
+```
+Set the ouptut configuration by bits/sign. The ouput range will be:
+
+For signed equal to ``true``
+
+* 2^(n-1) - 1 down to -2^(n-1)
+
+For signed equal to ``false``
+
+* 2^n-1 down to 0
+
+**Bits equals 16 is a special case.** When bits is ``16`` and sign is ``false`` the output range is
+
+* 32767 down to 0
+
+Returns ``false`` if a configuration error has occured. Which could be from a previous call.```
+
+```c++
+bool setOutputRange(int16_t min, int16_t max);
+```
+Set the ouptut range directly. The effective range is:
+
+* Min: -32768 to 32766
+* Max: -32767 to 32767
+
+Min must be greater than max.
+
+Returns ``false`` if a configuration error has occured. Which could be from a previous call.
+
+```c++
+void clear();
+```
+Reset the controller. This should be done before changing the configuration in any way.
+
+```c++
+bool configure(float kp, float ki, float kd, float hz, int bits=16, bool sign=false);
+```
+Bulk configure the controller. Equivalent to:
+
+```c++
+  clear();
+  setCoefficients(kp, ki, kd, hz);
+  setOutputConfig(bits, sign);
+```
+
+```c++
+int16_t step(int16_t sp, int16_t fb);
+```
+Run a single step of the controller and return the next output.
+
+```c++
+bool err() {
+```
+Test for a confiuration error. The controller will not run if this function returns ``true``. 
+
 ## Sample Code 
 
 ```c++ 
