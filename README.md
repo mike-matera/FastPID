@@ -60,7 +60,7 @@ FastPID(float kp, float ki, float kd, float hz, int bits=16, bool sign=false)
 ```
 Construct a controller that's ready to go. Calls the following:
 ```c++
-    configure(kp, ki, kd, hz, bits, sign);
+configure(kp, ki, kd, hz, bits, sign);
 ```
 
 ```c++
@@ -112,9 +112,9 @@ bool configure(float kp, float ki, float kd, float hz, int bits=16, bool sign=fa
 Bulk configure the controller. Equivalent to:
 
 ```c++
-  clear();
-  setCoefficients(kp, ki, kd, hz);
-  setOutputConfig(bits, sign);
+clear();
+setCoefficients(kp, ki, kd, hz);
+setOutputConfig(bits, sign);
 ```
 
 ```c++
@@ -145,6 +145,10 @@ FastPID myPID(Kp, Ki, Kd, Hz, output_bits, output_signed);
 void setup()
 {
   Serial.begin(9600);
+  if (myPID.err()) {
+    Serial.println("There is a configuration error!");
+    for (;;) {}
+  }
 }
 
 void loop()
