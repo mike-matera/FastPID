@@ -33,6 +33,7 @@ public:
 
   bool setCoefficients(float kp, float ki, float kd, float hz);
   bool setOutputConfig(int bits, bool sign);
+  bool setOutputRange(int16_t min, int16_t max);
   void clear();
   bool configure(float kp, float ki, float kd, float hz, int bits=16, bool sign=false);
   int16_t step(int16_t sp, int16_t fb);
