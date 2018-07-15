@@ -2,5 +2,5 @@
 # Datatypes (KEYWORD1)
 #######################################
 
-FastPID		KEYWORD1
+FastPID	KEYWORD1
 
