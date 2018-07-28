@@ -3,35 +3,35 @@ A fast 32-bit fixed-point PID controller for Arduino
 
 ## About 
 
-This PID controller is faster than alternatives for Arduino becuase it avoids expensive floating point operations. The PID controller is configured with floating point coefficients and translates them to fixed point internally. This imposes limitations on the domain of the coefficients. Setting the I and D terms to zero makes the controller run faster. The controller is configured to run at a fixed frequency and calling code is responsible for running at that frequency. The ```Ki``` and ```Kd``` parameters are scaled by the frequency to save time during the ```step()``` operation. 
+This PID controller is faster than alternatives for Arduino becuase it avoids expensive floating point operations. The PID controller is configured with floating point coefficients and translates them to fixed point internally. This imposes limitations on the domain of the coefficients. Setting the I and D terms to zero makes the controller run faster. The controller is configured to run at a fixed frequency and calling code is responsible for running at that frequency. The `Ki` and `Kd` parameters are scaled by the frequency to save time during the `step()` operation. 
 
 ## Description of Coefficients 
 
-  * ```Kp``` - P term of the PID controller. 
-  * ```Ki``` - I term of the PID controller. 
-  * ```Kd``` - D term of the PID controller. 
-  * ```Hz``` - The execution frequency of the controller. 
+  * `Kp` - P term of the PID controller. 
+  * `Ki` - I term of the PID controller. 
+  * `Kd` - D term of the PID controller. 
+  * `Hz` - The execution frequency of the controller. 
 
 ### Coefficient Domain 
 
-The computation pipeline expects 16 bit coefficients. This is controlled by ``PARAM_BITS`` and should not be changed or caluclations may overflow. The number of bits before and after the decimal place is controlled by ``PARAM_SHIFT`` in FastPID.h. The default value for ``PARAM_SHIFT`` is 8 and can be changed to suit your application.
+The computation pipeline expects 16 bit coefficients. This is controlled by `PARAM_BITS` and should not be changed or caluclations may overflow. The number of bits before and after the decimal place is controlled by `PARAM_SHIFT` in FastPID.h. The default value for `PARAM_SHIFT` is 8 and can be changed to suit your application.
 
   * **The parameter P domain is [0.00390625 to 255] inclusive.** 
   * **The parameter I domain is P / Hz** 
   * **The parameter D domain is P * Hz** 
 
-The controller checks for parameter domain violations and won't operate if a coefficient is outside of the range. All of the configuration operations return ```bool``` to alert the user of an error. The ```err()``` function checks the error condition. Errors can be cleared with the ```clear()``` function.
+The controller checks for parameter domain violations and won't operate if a coefficient is outside of the range. All of the configuration operations return `bool` to alert the user of an error. The `err()` function checks the error condition. Errors can be cleared with the `clear()` function.
 
 ## Execution Frequency
 
-**The execution frequency is not automatically detected as of version v1.1.0** This greatly improves the controller performance. Instead the '''Ki''' and '''Kd''' terms are scaled in the configuration step. It's essential to call '''step()''' at the rate that you specify. 
+**The execution frequency is not automatically detected as of version v1.1.0** This greatly improves the controller performance. Instead the `Ki` and `Kd` terms are scaled in the configuration step. It's essential to call `step()` at the rate that you specify. 
 
 ## Input and Output 
 
-The input and the setpoint are an ```int16_t``` this matches the width of Analog pins and accomodate negative readings and setpoints. The output of the PID is an ```int16_t```. The actual bit-width and signedness of the output can be configured. 
+The input and the setpoint are an `int16_t` this matches the width of Analog pins and accomodate negative readings and setpoints. The output of the PID is an `int16_t`. The actual bit-width and signedness of the output can be configured. 
   
-  * ```bits``` - The output width will be limited to values inside of this bit range. Valid values are 1 through 16 
-  * ```sign``` If ```true``` the output range is [-2^(bits-1), -2^(bits-1)-1]. If ```false``` output range is [0, 2^(bits-1)-1]. **The maximum output value of the controller is 32767 (even in 16 bit unsigned mode)** 
+  * `bits` - The output width will be limited to values inside of this bit range. Valid values are 1 through 16 
+  * `sign` If `true` the output range is [-2^(bits-1), -2^(bits-1)-1]. If `false` output range is [0, 2^(bits-1)-1]. **The maximum output value of the controller is 32767 (even in 16 bit unsigned mode)** 
 
 ## Performance 
 
@@ -53,7 +53,7 @@ The API strives to be simple and clear. I won't implment functions in the contro
 ```c++
 FastPID()
 ```
-Construct a default controller. The default coefficients are all zero. Do not use a default-constructed controller until after you've called ```setCoefficients()``` and ``setOutputconfig()```
+Construct a default controller. The default coefficients are all zero. Do not use a default-constructed controller until after you've called `setCoefficients()` and `setOutputconfig()`
 
 ```c++
 FastPID(float kp, float ki, float kd, float hz, int bits=16, bool sign=false)
@@ -66,28 +66,28 @@ configure(kp, ki, kd, hz, bits, sign);
 ```c++
 bool setCoefficients(float kp, float ki, float kd, float hz);
 ```
-Set the PID coefficients. The coefficients ``ki`` and ``kd`` are scaled by the value of ``hz``. The ``hz`` value informs the PID of the rate you will call ``step()``. You are required to call ``step()`` at the supplied rate and poor performance will happen if you do something else. 
+Set the PID coefficients. The coefficients `ki` and `kd` are scaled by the value of `hz`. The `hz` value informs the PID of the rate you will call `step()`. You are required to call `step()` at the supplied rate and poor performance will happen if you do something else. 
 
-Returns ``false`` if a configuration error has occured. Which could be from a previous call.```
+Returns `false` if a configuration error has occured. Which could be from a previous call.
 
 ```c++
 bool setOutputConfig(int bits, bool sign);
 ```
 Set the ouptut configuration by bits/sign. The ouput range will be:
 
-For signed equal to ``true``
+For signed equal to `true`
 
 * 2^(n-1) - 1 down to -2^(n-1)
 
-For signed equal to ``false``
+For signed equal to `false`
 
 * 2^n-1 down to 0
 
-**Bits equals 16 is a special case.** When bits is ``16`` and sign is ``false`` the output range is
+**Bits equals 16 is a special case.** When bits is `16` and sign is `false` the output range is
 
 * 32767 down to 0
 
-Returns ``false`` if a configuration error has occured. Which could be from a previous call.```
+Returns `false` if a configuration error has occured. Which could be from a previous call.
 
 ```c++
 bool setOutputRange(int16_t min, int16_t max);
@@ -99,7 +99,7 @@ Set the ouptut range directly. The effective range is:
 
 Min must be greater than max.
 
-Returns ``false`` if a configuration error has occured. Which could be from a previous call.
+Returns `false` if a configuration error has occured. Which could be from a previous call.
 
 ```c++
 void clear();
@@ -123,9 +123,9 @@ int16_t step(int16_t sp, int16_t fb);
 Run a single step of the controller and return the next output.
 
 ```c++
-bool err() {
+bool err();
 ```
-Test for a confiuration error. The controller will not run if this function returns ``true``. 
+Test for a confiuration error. The controller will not run if this function returns `true`. 
 
 ## Sample Code 
 
