@@ -89,6 +89,8 @@ int16_t FastPID::step(int16_t sp, int16_t fb) {
   }
 
   if (_i) {
+    // Used for Windup correction
+    _last_sum = _sum;
     // int17 * int16 = int33
     _sum += int64_t(err) * int64_t(_i);
 
@@ -121,11 +123,17 @@ int16_t FastPID::step(int16_t sp, int16_t fb) {
   // int32 (P) + int32 (I) + int32 (D) = int34
   int64_t out = int64_t(P) + int64_t(I) + int64_t(D);
 
-  // Make the output saturate
+  // Make the output saturate. Avoid Integral windup
   if (out > _outmax) 
+  {
     out = _outmax;
+    _sum = _last_sum;
+  }
   else if (out < _outmin) 
+  {
+    _sum = _last_sum;
     out = _outmin;
+  }
 
   // Remove the integer scaling factor. 
   int16_t rval = out >> PARAM_SHIFT;

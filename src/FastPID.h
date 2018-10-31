@@ -56,7 +56,7 @@ private:
   
   // State
   int16_t _last_sp, _last_out;
-  int64_t _sum;
+  int64_t _sum, _last_sum;
   int32_t _last_err;
 };
 
