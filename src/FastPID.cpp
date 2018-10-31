@@ -9,6 +9,7 @@ void FastPID::clear() {
   _last_sp = 0; 
   _last_out = 0;
   _sum = 0; 
+  _last_sum = 0;
   _last_err = 0;
   _cfg_err = false;
 } 
