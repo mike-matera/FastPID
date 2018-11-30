@@ -32,6 +32,7 @@ public:
   ~FastPID();
 
   bool setCoefficients(float kp, float ki, float kd, float hz);
+  bool setBangBang(int32_t out, int32_t treshold);
   bool setOutputConfig(int bits, bool sign);
   bool setOutputRange(int16_t min, int16_t max);
   void clear();
@@ -51,7 +52,8 @@ private:
 
   // Configuration
   uint32_t _p, _i, _d;
-  int64_t _outmax, _outmin; 
+  int64_t _outmax, _outmin, _b; 
+  int32_t _btreshold;
   bool _cfg_err; 
   
   // State

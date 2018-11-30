@@ -21,23 +21,31 @@ bool FastPID::setCoefficients(float kp, float ki, float kd, float hz) {
   return ! _cfg_err;
 }
 
+bool FastPID::setBangBang(int32_t output, int32_t threshold) {
+  _b = int64_t(output) * PARAM_MULT;
+  _btreshold = threshold;
+  return ! _cfg_err; 
+}
+
+
 bool FastPID::setOutputConfig(int bits, bool sign) {
   // Set output bits
   if (bits > 16 || bits < 1) {
     setCfgErr();
   }
   else {
-    if (bits == 16) {
-      _outmax = (0xFFFFULL >> (17 - bits)) * PARAM_MULT;
-    }
-    else{
-      _outmax = (0xFFFFULL >> (16 - bits)) * PARAM_MULT;
-    }
     if (sign) {
       _outmin = -((0xFFFFULL >> (17 - bits)) + 1) * PARAM_MULT;
+      _outmax = (0xFFFFULL >> (17 - bits)) * PARAM_MULT;
     }
     else {
       _outmin = 0;
+      if (bits == 16) {
+        //Special case: 16 bits
+        _outmax = (0xFFFFULL >> (17 - bits)) * PARAM_MULT;
+      } else {
+        _outmax = (0xFFFFULL >> (16 - bits)) * PARAM_MULT;
+      }
     }
   }
   return ! _cfg_err;
@@ -82,7 +90,8 @@ int16_t FastPID::step(int16_t sp, int16_t fb) {
   // int16 + int16 = int17
   int32_t err = int32_t(sp) - int32_t(fb);
   int32_t P = 0, I = 0;
-  int32_t D = 0;
+  int32_t D = 0, B = 0;
+
 
   if (_p) {
     // uint16 * int16 = int32
@@ -121,8 +130,17 @@ int16_t FastPID::step(int16_t sp, int16_t fb) {
     D = int32_t(_d) * int32_t(deriv);
   }
 
+  // BangBang controller
+  if (_b) {
+    if (err > _btreshold) {
+      B = int32_t(_b);
+    } else if (err < _btreshold) {
+      B = - int32_t(_b);
+    }
+  }
+
   // int32 (P) + int32 (I) + int32 (D) = int34
-  int64_t out = int64_t(P) + int64_t(I) + int64_t(D);
+  int64_t out = int64_t(P) + int64_t(I) + int64_t(D) + int64_t(B);
 
   // Make the output saturate. Avoid Integral windup
   if (out > _outmax) 
