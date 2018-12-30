@@ -42,7 +42,6 @@ FastPID performance varies depending on the coefficients. When a coefficient is 
 | 0.1 | 0.5 | 0.1 | ~64 | 
 | 0.1 | 0.5 | 0 | ~56 | 
 | 0.1 | 0 | 0 | ~28 | 
-| 0 | 0 | 0 | ~28 | 
 
 For comparison the excellent [ArduinoPID](https://github.com/br3ttb/Arduino-PID-Library) library takes an average of about 90-100 uS per step with all non-zero coefficients. 
 
@@ -66,9 +65,7 @@ configure(kp, ki, kd, hz, bits, sign);
 ```c++
 bool setCoefficients(float kp, float ki, float kd, float hz);
 ```
-Set the PID coefficients. The coefficients `ki` and `kd` are scaled by the value of `hz`. The `hz` value informs the PID of the rate you will call `step()`. You are required to call `step()` at the supplied rate and poor performance will happen if you do something else. 
-
-Returns `false` if a configuration error has occured. Which could be from a previous call.
+Set the PID coefficients. The coefficients `ki` and `kd` are scaled by the value of `hz`. The `hz` value informs the PID of the rate you will call `step()`. Calling code is responsible for calling `step()` at the rate in `hz`. Returns `false` if a configuration error has occured. Which could be from a previous call.
 
 ```c++
 bool setOutputConfig(int bits, bool sign);
