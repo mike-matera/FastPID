@@ -10,8 +10,7 @@ void FastPID::clear() {
   _last_out = 0;
   _sum = 0; 
   _last_err = 0;
-  _cfg_err = false;
-} 
+}
 
 bool FastPID::setCoefficients(float kp, float ki, float kd, float hz) {
   _p = floatToParam(kp);
@@ -55,6 +54,7 @@ bool FastPID::setOutputRange(int16_t min, int16_t max)
 
 bool FastPID::configure(float kp, float ki, float kd, float hz, int bits, bool sign) {
   clear();
+  _cfg_err = false;
   setCoefficients(kp, ki, kd, hz);
   setOutputConfig(bits, sign);
   return ! _cfg_err; 
