@@ -124,6 +124,47 @@ bool err();
 ```
 Test for a confiuration error. The controller will not run if this function returns `true`. 
 
+## Integeral Windup 
+
+Applications that control slow moving systems and have a non-zero integral term often see significant overshoot on startup. 
+This is caused by the integral sum "winidng up" as it remembers a long time away from the setpoint. If this describes your 
+system there are two things you can do. 
+
+### Addressing Windup: Limit the Sum 
+
+There are constants in `FastPID.h` that control the maximum allowable integral. Lowering these prevents the controller from 
+remembering as much offset from the setpoint and will reduce the overshoot. 
+
+```c++
+#define INTEG_MAX    (INT32_MAX)
+#define INTEG_MIN    (INT32_MIN)
+```
+
+Change these constants with caution. Setting them too low will fix your overshoot problem but it will negatively affect 
+the controller's ability to regulate the load. If you're unsure of the right constant use the next solution instead of 
+limiting the sum. 
+
+
+### Limiting Windup: Bounded Regulation 
+
+The PID controller works best when the system is close to the setpoint. During the startup phase, or in the case of a 
+significant excursion, you can disable PID control entirely. An example of this can be found in the Sous-Vide controller 
+example in this project. The core of the logic is in this code: 
+
+```c++
+if (feedback < (setpoint * 0.9)) {
+  analogWrite(PIN_OUTPUT, 1);
+  myPID.clear();
+}
+else {
+  analogWrite(PIN_OUTPUT, myPID.step(setpoint, feedback));
+}
+```
+
+The code bypasses the PID when the temperature is less than 90% of the setpoint, simply turning the heater on. When the 
+temperature is above 90% of the setpoint the PID is enabled. Fixing your overshoot this way gives you much better control
+of your system without having to add complex, invalid and difficult to understand features to the PID controller. 
+
 ## Sample Code 
 
 ```c++ 
