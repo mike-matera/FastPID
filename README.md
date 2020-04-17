@@ -122,12 +122,12 @@ Run a single step of the controller and return the next output.
 ```c++
 bool err();
 ```
-Test for a confiuration error. The controller will not run if this function returns `true`. 
+Test for a configuration error. The controller will not run if this function returns `true`. 
 
 ## Integeral Windup 
 
 Applications that control slow moving systems and have a non-zero integral term often see significant overshoot on startup. 
-This is caused by the integral sum "winidng up" as it remembers a long time away from the setpoint. If this describes your 
+This is caused by the integral sum "winding up" as it remembers a long time away from the setpoint. If this describes your 
 system there are two things you can do. 
 
 ### Addressing Windup: Limit the Sum 
