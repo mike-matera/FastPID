@@ -1,8 +1,8 @@
 #include <iostream>
 #include <stdint.h>
 using namespace std;
-static uint32_t __timer = 0; 
-static uint32_t __t() {
+static uint32_t __timer = 1000; 
+[[maybe_unused]] static uint32_t __t() {
   __timer += 1000;
   return __timer;
 }
