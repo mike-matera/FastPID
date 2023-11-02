@@ -4,7 +4,8 @@
 
 double Setpoint, Input, Output;
 
-PID pid(&Input, &Output, &Setpoint, 0, 0, 0, DIRECT);
+// PID pid(&Input, &Output, &Setpoint, 0, 0, 0, DIRECT);
+PID *pid = NULL;
 
 static PyObject *
 configure(PyObject *self, PyObject *args) {
@@ -13,7 +14,16 @@ configure(PyObject *self, PyObject *args) {
   float kd; 
   int bits=16; 
   bool sign=false;
+
+  Setpoint = 0;
+  Output = 0;
+  Input = 0;
   
+  if (pid != NULL) {
+    delete pid;
+  }
+  pid = new PID(&Input, &Output, &Setpoint, 0, 0, 0, DIRECT);
+
   if (!PyArg_ParseTuple(args, "fffib", &kp, &ki, &kd, &bits, &sign))
     return NULL;
 
@@ -32,10 +42,10 @@ configure(PyObject *self, PyObject *args) {
     }
   }
 
-  pid.SetTunings(kp, ki, kd);
-  pid.SetOutputLimits(outmin, outmax);
-  pid.SetMode(AUTOMATIC);
-  pid.SetSampleTime(1000); 
+  pid->SetTunings(kp, ki, kd);
+  pid->SetOutputLimits(outmin, outmax);
+  pid->SetMode(AUTOMATIC);
+  pid->SetSampleTime(1000); 
   return PyBool_FromLong(true);
 }
 
@@ -48,7 +58,7 @@ step(PyObject *self, PyObject *args) {
 
   Setpoint = sp;
   Input = fb; 
-  pid.Compute();
+  pid->Compute();
   return PyLong_FromLong(Output);
 }
 
@@ -69,5 +79,9 @@ static struct PyModuleDef pid_module = {
 PyMODINIT_FUNC
 PyInit_ArduinoPID(void)
 {
+  Setpoint = 0;
+  Input = 0;
+  Output = 0;
+  pid = new PID(&Input, &Output, &Setpoint, 0, 0, 0, DIRECT);
   return PyModule_Create(&pid_module);
 }

@@ -4,7 +4,7 @@
 
 double Setpoint, Input, Output;
 
-AutoPID pid(&Input, &Setpoint, &Output, 0, 0, 0, 0, 0);
+AutoPID *pid = NULL; 
 
 static PyObject *
 configure(PyObject *self, PyObject *args) {
@@ -13,7 +13,18 @@ configure(PyObject *self, PyObject *args) {
   float kd; 
   int bits=16; 
   bool sign=false;
-  
+
+  Setpoint = 0;
+  Output = 0;
+  Input = 0;
+  __timer = 1000; 
+
+  if (pid != NULL) {
+    delete pid;
+  }
+  pid = new AutoPID(&Input, &Setpoint, &Output, 0, 0, 0, 0, 0);
+  pid->reset(); 
+
   if (!PyArg_ParseTuple(args, "fffib", &kp, &ki, &kd, &bits, &sign))
     return NULL;
 
@@ -32,9 +43,9 @@ configure(PyObject *self, PyObject *args) {
     }
   }
 
-  pid.setGains(kp, ki, kd);
-  pid.setTimeStep(1000); 
-  pid.setOutputRange(outmin, outmax);
+  pid->setGains(kp, ki, kd);
+  pid->setTimeStep(1000); 
+  pid->setOutputRange(outmin, outmax);
   return PyBool_FromLong(true);
 }
 
@@ -47,7 +58,7 @@ step(PyObject *self, PyObject *args) {
 
   Setpoint = sp;
   Input = fb; 
-  pid.run();
+  pid->run();
   return PyLong_FromLong(Output);
 }
 
@@ -68,5 +79,10 @@ static struct PyModuleDef pid_module = {
 PyMODINIT_FUNC
 PyInit_AutoPID(void)
 {
+  Setpoint = 0;
+  Input = 0;
+  Output = 0;
+  __timer = 1000; 
+  pid = new AutoPID(&Input, &Setpoint, &Output, 0, 0, 0, 0, 0);
   return PyModule_Create(&pid_module);
 }
